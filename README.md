@@ -2,9 +2,14 @@
     <img alt="An Example .io Game" title="An Example .io Game" src="https://github.com/marcel0024/ExampleIOGame/blob/main/src/client/src/assets/icon.svg" width="140"> <br />
     An Example .io Game
 </h1>
+
 <h4 align="center">
-  <a href="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml"><img src="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml/badge.svg" alt="Build Status"></img></a>
+  <a href="https://example-io-game.azurewebsites.net/">https://example-io-game.azurewebsites.net/</a>
 </h4>
+
+<p align="center">
+  <a href="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml"><img src="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml/badge.svg" alt="Build Status"></img></a>
+</p>
 
 
 An example multiplayer (.io) web game. Created in .NET and Angular.
