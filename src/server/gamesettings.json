@@ -1,0 +1,18 @@
+﻿{
+  "GameSettings": {
+    "TotalPlayersPerGame": 10,
+    "MapSize": 3000,
+
+    "PlayerRadius": 20,
+    "PlayerMaxHP": 100,
+    "PlayerSpeed": 400,
+    "PlayerFireCooldown": 0.25,
+
+    "BulletRadius": 3,
+    "BulletSpeed": 800,
+    "BulletDamage": 10,
+
+    "ScoreBulletHit": 20,
+    "ScorePerSecond": 1
+  }
+}

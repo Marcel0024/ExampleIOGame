@@ -1,0 +1,13 @@
+<canvas #gameCanvas></canvas>
+<div id="leaderboard" *ngIf="updateLeaderboard$ | async as leaderboards">
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Score</th>
+        </tr>
+        <tr *ngFor="let leader of leaderboards">
+            <td>{{ leader.username }}</td>
+            <td>{{ leader.score }}</td>
+        </tr>
+    </table>
+</div>

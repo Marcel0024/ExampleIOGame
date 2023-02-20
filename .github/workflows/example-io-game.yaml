@@ -1,0 +1,96 @@
+name: ExampleIOGame Deploy
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AZURE_WEBAPP_NAME: example-io-game
+  CLIENT_APP_LOCATION: src/client
+  SERVER_APP_LOCATION: src/server/IOGameServer.csproj
+  NODE_VERSION: 18
+  DOTNET_VERSION: "7.x"
+  TEMP_FOLDER: "Release"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy_platform_resources:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: test
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Repo Checkout
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          # for future me: az ad sp create-for-rbac --name "{namehere}" --role Contributor --scopes /subscriptions/{subscriptionId} --sdk-auth
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Checkout files
+        uses: actions/checkout@master
+
+      - name: Azure deploy
+        uses: azure/arm-deploy@v1
+        with:
+          scope: subscription
+          region: westeurope
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          template: azure-resources/main.bicep
+          parameters: projectname=${{ env.AZURE_WEBAPP_NAME }}
+
+      - name: Azure Logout
+        run: az logout
+
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup .NET Core ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: dotnet publish
+        run: dotnet publish ${{ env.SERVER_APP_LOCATION }} -c Release -o ${{ env.TEMP_FOLDER }} --arch x64 --self-contained true
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: npm install
+        run: npm install --prefix ${{ env.CLIENT_APP_LOCATION }}
+
+      - name: npm run build
+        run: npm run build --prefix ${{ env.CLIENT_APP_LOCATION }} -- --configuration production --output-path  ../../${{ env.TEMP_FOLDER }}/wwwroot
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v2
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ env.TEMP_FOLDER }}
+
+      - name: Azure Logout
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: az logout
