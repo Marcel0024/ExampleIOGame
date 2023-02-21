@@ -1,4 +1,5 @@
 ﻿@page
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 
 <!DOCTYPE html>
 <html lang="en">
@@ -19,8 +20,8 @@
 </head>
 <body>
     <app-root></app-root>
-    <script src="runtime.js" type="module"></script>
-    <script src="polyfills.js" type="module"></script>
-    <script src="main.js" type="module"></script>
+    <script src="runtime.js" type="module" asp-append-version="true"></script>
+    <script src="polyfills.js" type="module" asp-append-version="true"></script>
+    <script src="main.js" type="module" asp-append-version="true"></script>
 </body>
 </html>

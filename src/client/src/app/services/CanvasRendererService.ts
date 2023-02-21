@@ -14,27 +14,29 @@ export class CanvasRendererService {
   ) {}
 
   renderGame(state: GameUpdate | null) {
-    if (state?.me) {
-      // Draw background
-      this.renderBackground(state.me.x, state.me.y);
-
-      // Draw boundaries
-      this.canvasContext.strokeStyle = 'black';
-      this.canvasContext.lineWidth = 1;
-      this.canvasContext.strokeRect(
-        this.canvasElement.width / 2 - state.me.x,
-        this.canvasElement.height / 2 - state.me.y,
-        this.mapSize,
-        this.mapSize
-      );
-
-      // Draw all bullets
-      state.b.forEach((b) => this.renderBullet(state.me, b));
-
-      // Draw all players
-      this.renderPlayer(state.me, state.me);
-      state.p.forEach((p) => this.renderPlayer(state.me, p));
+    if (!state?.me) {
+      return;
     }
+
+    // Draw background
+    this.renderBackground(state.me.x, state.me.y);
+
+    // Draw boundaries
+    this.canvasContext.strokeStyle = 'black';
+    this.canvasContext.lineWidth = 1;
+    this.canvasContext.strokeRect(
+      this.canvasElement.width / 2 - state.me.x,
+      this.canvasElement.height / 2 - state.me.y,
+      this.mapSize,
+      this.mapSize
+    );
+
+    // Draw all bullets
+    state.b.forEach((b) => this.renderBullet(state.me, b));
+
+    // Draw all players
+    this.renderPlayer(state.me, state.me);
+    state.p.forEach((p) => this.renderPlayer(state.me, p));
   }
 
   renderMainMenuBackground(): void {

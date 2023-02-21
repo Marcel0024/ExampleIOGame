@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpTransportType, HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ClientCalls } from 'src/app/constants/ClientCalls';
@@ -25,12 +25,20 @@ export class GameHubService {
   }
 
   public startGame(username: string): void {
-    this.hubConnection?.send(ServerCalls.JoinGame, username);
+    if (this.hubConnection?.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    this.hubConnection.send(ServerCalls.JoinGame, username);
     this.gameStatus$.next(GameScreenStatus.Playing);
   }
 
   public changeDirection(direction: number): void {
-    this.hubConnection?.send(ServerCalls.ChangeDirection, direction);
+    if (this.hubConnection?.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    this.hubConnection.send(ServerCalls.ChangeDirection, direction);
   }
 
   private registerServerCalls(hubConnection: HubConnection): void {
