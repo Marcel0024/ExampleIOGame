@@ -1,21 +1,17 @@
-<h1 align="center">
-  <img alt="An Example .io Game" title="An Example .io Game" src="https://github.com/marcel0024/ExampleIOGame/blob/main/src/client/src/assets/icon.svg" width="140">
-  <br />
-  An Example .io Game
-</h1>
+<div align="center">
+  <img alt=".NET logo" title=".NET logo" src="https://github.com/marcel0024/ExampleIOGame/blob/main/src/client/src/assets/dotnetlogo.png" width="120">
+  <img alt="Angular logo" title="Angular logo" src="https://github.com/marcel0024/ExampleIOGame/blob/main/src/client/src/assets/angularlogo.png"width="120">
+  <h1>An Example .io Game</h1>
+</div>
 
 <h4 align="center">
   <a href="https://example-io-game.azurewebsites.net/">https://example-io-game.azurewebsites.net/</a>
 </h4>
 
-<h3 align="center">
-  <img alt=".NET logo" title=".NET logo" src="https://github.com/marcel0024/ExampleIOGame/blob/main/src/client/src/assets/dotnetlogo.png" width="80">
-  <img alt="Angular logo" title="Angular logo" src="https://github.com/marcel0024/ExampleIOGame/blob/main/src/client/src/assets/angularlogo.png"width="80">
-</h3>
-
 <p align="center">
   <a href="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml"><img src="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml/badge.svg" alt="Build Status"></img></a>
 </p>
+
 
 An example multiplayer (.io) web game created in .NET 7 and Angular 15.
 
@@ -28,7 +24,7 @@ To get started with the client, make sure you have Node and NPM & Angular instal
 ```bash
 $ cd src/client
 $ npm install
-$ ng serve
+$ npm start
 ```
 
 Then to get the .NET app started, make sure you have .NET sdk installed.
