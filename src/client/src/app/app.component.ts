@@ -18,6 +18,9 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAssetsService.downloadAllAssets().pipe(take(1)).subscribe();
+  }
+
+  connect(): void {
     this.gameHubService.connect();
   }
 

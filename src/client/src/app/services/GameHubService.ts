@@ -12,16 +12,25 @@ import { GameUpdate } from 'src/app/models/GameUpdate';
   providedIn: 'root',
 })
 export class GameHubService {
-  private hubConnection: HubConnection | null = null;
+  private hubConnection: HubConnection = new HubConnectionBuilder()
+    .withUrl(environment.gameHubUrl, {
+      skipNegotiation: true,
+      transport: HttpTransportType.WebSockets,
+    })
+    .withHubProtocol(new MessagePackHubProtocol())
+    .configureLogging(environment.signalRLogLevel)
+    .build();
 
   gameUpdate$ = new Subject<GameUpdate>();
   gameStatus$ = new BehaviorSubject<GameScreenStatus>(GameScreenStatus.WelcomeScreen);
 
-  public connect(): void {
-    this.hubConnection = this.buildHubConnection();
+  constructor() {
     this.hubConnection.start();
+    this.registerServerCalls();
+  }
 
-    this.registerServerCalls(this.hubConnection);
+  public connect(): void {
+    this.hubConnection.start().then(() => this.gameStatus$.next(GameScreenStatus.WelcomeScreen));
   }
 
   public startGame(username: string): void {
@@ -41,25 +50,14 @@ export class GameHubService {
     this.hubConnection.send(ServerCalls.ChangeDirection, direction);
   }
 
-  private registerServerCalls(hubConnection: HubConnection): void {
-    hubConnection.on(ClientCalls.GameUpdate, (data) => {
+  private registerServerCalls(): void {
+    this.hubConnection.on(ClientCalls.GameUpdate, (data) => {
       const processedData = this.convertKeysToCamelCase(JSON.parse(data));
       this.gameUpdate$.next(processedData as GameUpdate);
     });
 
-    hubConnection.on(ClientCalls.GameOver, () => this.gameStatus$.next(GameScreenStatus.Dead));
-    hubConnection.onclose(() => this.gameStatus$.next(GameScreenStatus.Disconnected));
-  }
-
-  private buildHubConnection(): HubConnection {
-    return new HubConnectionBuilder()
-      .withUrl(environment.gameHubUrl, {
-        skipNegotiation: true,
-        transport: HttpTransportType.WebSockets,
-      })
-      .withHubProtocol(new MessagePackHubProtocol())
-      .configureLogging(environment.signalRLogLevel)
-      .build();
+    this.hubConnection.on(ClientCalls.GameOver, () => this.gameStatus$.next(GameScreenStatus.Dead));
+    this.hubConnection.onclose(() => this.gameStatus$.next(GameScreenStatus.Disconnected));
   }
 
   private convertKeysToCamelCase(o: any): any {
