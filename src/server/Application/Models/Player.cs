@@ -16,8 +16,10 @@ namespace IOGameServer.Application.Models
         public Player(GameSettings gameSettings)
         {
             GameSettings = gameSettings;
+
             Speed = gameSettings.PlayerSpeed;
             HP = gameSettings.PlayerMaxHP;
+            FireCoolDown = gameSettings.PlayerFireCooldown;
         }
 
         public override void Update(double distance)
