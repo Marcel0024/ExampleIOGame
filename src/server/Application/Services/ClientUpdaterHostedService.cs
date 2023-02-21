@@ -6,26 +6,56 @@ namespace IOGameServer.Application.Services
 {
     public class ClientUpdaterHostedService : IHostedService, IDisposable
     {
-        private Timer Timer { get; init; }
+        private readonly GameService _gameService;
+        private readonly IHubContext<GameHub, IGameHub> _hubContext;
+        private readonly CancellationTokenSource _stoppingCts = new();
 
-        public IHubContext<GameHub, IGameHub> HubContext { get; }
-        public GameService GameService { get; }
+        private PeriodicTimer Timer { get; init; }
+        private Task ExecutingTask { get; set; }
+
 
         public ClientUpdaterHostedService(IHubContext<GameHub, IGameHub> hubContext, GameService gameService)
         {
-            HubContext = hubContext;
-            GameService = gameService;
+            _hubContext = hubContext;
+            _gameService = gameService;
 
-            Timer = new Timer(
-                    async (s) => { await UpdateAllGames(); },
-                    null,
-                    TimeSpan.FromSeconds(3),
-                    TimeSpan.FromMilliseconds(1000 / 30));
+            Timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000 / 30));
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            ExecutingTask = Task.Run(async () =>
+            {
+                while (await Timer.WaitForNextTickAsync(_stoppingCts.Token))
+                {
+                    await UpdateAllGames();
+                }
+            }, cancellationToken);
+
+            return Task.CompletedTask;
+        }
+
+        public virtual async Task StopAsync(CancellationToken cancellationToken)
+        {
+            if (ExecutingTask == null)
+            {
+                return;
+            }
+
+            try
+            {
+                // Signal cancellation to the executing method
+                _stoppingCts.Cancel();
+            }
+            finally
+            {
+                await Task.WhenAny(ExecutingTask, Task.Delay(Timeout.Infinite, cancellationToken));
+            }
         }
 
         private async Task UpdateAllGames()
         {
-            foreach (var game in GameService.Games.Values.ToArray())
+            foreach (var game in _gameService.Games.Values)
             {
                 game.Update();
 
@@ -36,11 +66,11 @@ namespace IOGameServer.Application.Services
 
         private async Task UpdateAllPlayersOfGame(Game game)
         {
-            foreach (var player in game.PlayersDictionary.Values.ToArray())
+            foreach (var player in game.PlayersDictionary.Values)
             {
                 var playerUpdate = game.CreateUpdateJson(player);
 
-                await HubContext.Clients
+                await _hubContext.Clients
                     .Client(player.ConnectionId)
                     .GameUpdate(JsonSerializer.Serialize(playerUpdate));
             }
@@ -52,16 +82,12 @@ namespace IOGameServer.Application.Services
 
             foreach (var deadPlayer in deadPlayers)
             {
-                await HubContext.Clients
+                await _hubContext.Clients
                     .Client(deadPlayer.ConnectionId)
                     .GameOver();
             }
         }
 
-        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-        public void Dispose() => Timer?.Dispose();
+        public void Dispose() => _stoppingCts.Cancel();
     }
 }
