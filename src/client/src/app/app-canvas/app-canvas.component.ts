@@ -43,7 +43,7 @@ export class CanvasComponent implements AfterViewInit {
       filter(() => this.gameHubService.gameStatus$.value === GameScreenStatus.Playing),
       throttleTime(50),
       map((event) => {
-        if (event instanceof TouchEvent) {
+        if (window.TouchEvent && event instanceof TouchEvent) {
           const touchEvent = event as TouchEvent;
 
           return {
