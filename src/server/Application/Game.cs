@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 
 namespace IOGameServer.Application
 {
-    public class Game
+    public sealed class Game
     {
         private double _timeDifference;
         private DateTime _lastDateTimeUpdated = DateTime.UtcNow;
@@ -76,7 +76,7 @@ namespace IOGameServer.Application
 
         private void HandleCollisions()
         {
-            foreach (var bullet in BulletsDictionary.Values.ToArray())
+            foreach (var bullet in BulletsDictionary.Values)
             {
                 foreach (var player in PlayersDictionary.Values)
                 {
@@ -92,7 +92,7 @@ namespace IOGameServer.Application
                         PlayersDictionary.TryGetValue(bullet.PlayerId, out var shooter);
                         shooter?.ScoreBulletHit();
 
-                        BulletsDictionary.Remove(bullet.Id, out _);
+                        BulletsDictionary.TryRemove(bullet.Id, out _);
                         break;
                     }
                 }
@@ -101,7 +101,14 @@ namespace IOGameServer.Application
 
         public Player GetPlayer(string id)
         {
-            return PlayersDictionary[id];
+            if (string.IsNullOrEmpty(id))
+            {
+                return null;
+            }
+
+            PlayersDictionary.TryGetValue(id, out Player player);
+
+            return player;
         }
 
         public Player AddPlayer(string username, string connectionId)
@@ -127,27 +134,23 @@ namespace IOGameServer.Application
 
         public UpdateModel CreateUpdateJson(Player player)
         {
-            var players = PlayersDictionary.Values.ToArray();
-
-            var nearbyPlayers = players
-                .Where(p => p.Id != player.Id && p.DistanceTo(player) <= GameSettings.MapSize / 2);
-
-            var nearbyBullets = BulletsDictionary.Values
-                .Where(b => b.DistanceTo(player) <= GameSettings.MapSize / 2);
-
             return new UpdateModel
             {
                 T = _timeDifference,
                 Me = player.ToJson(),
-                P = nearbyPlayers.Select(p => p.ToJson()),
-                B = nearbyBullets.Select(b => b.ToJson()),
-                L = GetLeaderBoard(players)
+                P = PlayersDictionary.Values
+                    .Where(p => p.Id != player.Id && p.DistanceTo(player) <= GameSettings.MapSize / 2)
+                    .Select(p => p.ToJson()),
+                B = BulletsDictionary.Values
+                    .Where(b => b.DistanceTo(player) <= GameSettings.MapSize / 2)
+                    .Select(b => b.ToJson()),
+                L = GetLeaderBoard()
             };
         }
 
-        public IEnumerable<UpdateModel.LeaderBoard> GetLeaderBoard(Player[] players)
+        public IEnumerable<UpdateModel.LeaderBoard> GetLeaderBoard()
         {
-            return players
+            return PlayersDictionary.Values
                 .OrderByDescending(p => p.Score)
                 .Take(5)
                 .Select(p => new UpdateModel.LeaderBoard

@@ -1,6 +1,6 @@
 ﻿namespace IOGameServer.Hubs.ClientModels
 {
-    public class UpdateModel
+    public sealed class UpdateModel
     {
         public double T { get; init; }
         public Player Me { get; init; }
@@ -8,7 +8,7 @@
         public IEnumerable<GameObject> B { get; init; }
         public IEnumerable<LeaderBoard> L { get; init; }
 
-        public class Player : GameObject
+        public sealed class Player : GameObject
         {
             public double Direction { get; init; }
             public double Hp { get; init; }
@@ -21,7 +21,7 @@
             public int Y { get; init; }
         }
 
-        public class LeaderBoard
+        public sealed class LeaderBoard
         {
             public string Username { get; init; }
             public int Score { get; init; }

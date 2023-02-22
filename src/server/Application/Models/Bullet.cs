@@ -1,6 +1,6 @@
 ﻿namespace IOGameServer.Application.Models
 {
-    public class Bullet : GameObject
+    public sealed class Bullet : GameObject
     {
         public required string PlayerId { get; set; }
     }

@@ -1,6 +1,6 @@
 ﻿namespace IOGameServer.Application.Settings
 {
-    public class GameSettings
+    public sealed class GameSettings
     {
         public int TotalPlayersPerGame { get; init; }
         public int MapSize { get; init; }

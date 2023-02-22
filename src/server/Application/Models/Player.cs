@@ -3,7 +3,7 @@ using IOGameServer.Hubs.ClientModels;
 
 namespace IOGameServer.Application.Models
 {
-    public class Player : GameObject
+    public sealed class Player : GameObject
     {
         private readonly GameSettings GameSettings;
 

@@ -2,7 +2,7 @@
 
 namespace IOGameServer.Pages
 {
-    public class IndexModel : PageModel
+    public sealed class IndexModel : PageModel
     {
         public void OnGet()
         { }

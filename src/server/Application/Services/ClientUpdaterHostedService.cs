@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace IOGameServer.Application.Services
 {
-    public class ClientUpdaterHostedService : IHostedService, IDisposable
+    public sealed class ClientUpdaterHostedService : IHostedService, IDisposable
     {
         private readonly GameService _gameService;
         private readonly IHubContext<GameHub, IGameHub> _hubContext;
@@ -35,7 +35,7 @@ namespace IOGameServer.Application.Services
             return Task.CompletedTask;
         }
 
-        public virtual async Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
             if (ExecutingTask == null)
             {

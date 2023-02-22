@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace IOGameServer.Hubs
 {
-    public partial class GameHub : Hub<IGameHub>
+    public sealed class GameHub : Hub<IGameHub>
     {
         private const string _gameIdKey = "groupId";
         private const string _playerIdKey = "playerId";

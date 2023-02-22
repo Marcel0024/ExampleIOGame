@@ -6,11 +6,11 @@ using System.Collections.Concurrent;
 
 namespace IOGameServer.Application.Services
 {
-    public class GameService
+    public sealed class GameService
     {
         private readonly GameSettings GameSettings;
 
-        public ConcurrentDictionary<string, Game> Games { get; init; } = new ConcurrentDictionary<string, Game>();
+        public ConcurrentDictionary<string, Game> Games { get; init; } = new ConcurrentDictionary<string, Game>(3, 10);
 
         public GameService(IOptions<GameSettings> gameSettings)
         {
