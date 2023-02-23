@@ -87,7 +87,7 @@ export class CanvasRendererService {
   }
 
   private renderPlayer(me: Player, player: Player): void {
-    const { x, y, direction } = player;
+    const { x, y, dir } = player;
     const canvasX = this.canvasElement.width / 2 + x - me.x;
     const canvasY = this.canvasElement.height / 2 + y - me.y;
 
@@ -98,7 +98,7 @@ export class CanvasRendererService {
     // Draw ship
     this.canvasContext.save();
     this.canvasContext.translate(canvasX, canvasY);
-    this.canvasContext.rotate(direction);
+    this.canvasContext.rotate(dir);
     this.canvasContext.drawImage(
       this.assetsService.getAsset('ship.svg'),
       -this.playerRadius,

@@ -7,7 +7,7 @@ import { GameHubService } from './GameHubService';
   providedIn: 'root',
 })
 export class StateService {
-  private renderDelay = 100;
+  private renderDelayInMS = 100;
   private gameUpdates: GameUpdate[] = [];
   private gameStart = 0;
   private firstServerTimestamp = 0;
@@ -21,7 +21,6 @@ export class StateService {
         this.gameStart = Date.now();
       }
       this.gameUpdates.push(gameUpdate);
-
       this.leaderboardUpdate$.next(gameUpdate.l);
 
       // Keep only one game update before the current server time
@@ -33,7 +32,7 @@ export class StateService {
   }
 
   private currentServerTime(): number {
-    return this.firstServerTimestamp + (Date.now() - this.gameStart) - this.renderDelay;
+    return this.firstServerTimestamp + (Date.now() - this.gameStart) - this.renderDelayInMS;
   }
 
   // Returns the index of the base update, the first game update before
@@ -73,14 +72,14 @@ export class StateService {
     }
   }
 
-  private interpolateObject<T extends object>(object1: any, object2: any, ratio: number): T {
+  private interpolateObject<T>(object1: any, object2: any, ratio: number): T {
     if (!object2) {
       return object1;
     }
 
     let interpolated: any = {};
     Object.keys(object1).forEach((key) => {
-      if (key === 'direction') {
+      if (key === 'dir') {
         interpolated[key] = this.interpolateDirection(object1[key], object2[key], ratio);
       } else {
         interpolated[key] = object1[key] + (object2[key] - object1[key]) * ratio;

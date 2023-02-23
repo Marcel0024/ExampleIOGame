@@ -19,7 +19,7 @@ namespace IOGameServer.Application.Services
             _hubContext = hubContext;
             _gameService = gameService;
 
-            Timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000 / 30));
+            Timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000 / 24));
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

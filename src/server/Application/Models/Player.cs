@@ -5,17 +5,19 @@ namespace IOGameServer.Application.Models
 {
     public sealed class Player : GameObject
     {
-        private readonly GameSettings GameSettings;
+        private readonly GameSettings _gameSettings;
 
-        public required string Username { get; set; }
+        public required string Username { get; init; }
         public required string ConnectionId { get; init; }
-        public double HP { get; set; }
-        public double Score { get; private set; } = 0;
-        public double FireCoolDown { get; set; }
+        public double HP { get; private set; }
+        public double Score { get; private set; }
+
+        private double FireCoolDown { get; set; }      
+
 
         public Player(GameSettings gameSettings)
         {
-            GameSettings = gameSettings;
+            _gameSettings = gameSettings;
 
             Speed = gameSettings.PlayerSpeed;
             HP = gameSettings.PlayerMaxHP;
@@ -27,42 +29,42 @@ namespace IOGameServer.Application.Models
             base.Update(distance);
 
             // Update score
-            Score += (double)distance * GameSettings.ScorePerSecond;
+            Score += distance * _gameSettings.ScorePerSecond;
 
             // Make sure the player stays in bounds
-            X = Math.Max(5, Math.Min(GameSettings.MapSize, X));
-            Y = Math.Max(5, Math.Min(GameSettings.MapSize, Y));
+            X = Math.Max(5, Math.Min(_gameSettings.MapSize, X));
+            Y = Math.Max(5, Math.Min(_gameSettings.MapSize, Y));
 
             FireCoolDown -= distance;
         }
 
         public void TakeBulletDamage()
         {
-            HP -= GameSettings.BulletDamage;
+            HP -= _gameSettings.BulletDamage;
         }
 
         public void ScoreBulletHit()
         {
-            Score += GameSettings.ScoreBulletHit;
+            Score += _gameSettings.ScoreBulletHit;
         }
 
         public bool CanFireBullet()
         {
             if (FireCoolDown <= 0)
             {
-                FireCoolDown += GameSettings.PlayerFireCooldown;
+                FireCoolDown += _gameSettings.PlayerFireCooldown;
                 return true;
             }
 
             return false;
         }
 
-        public new UpdateModel.Player ToJson() => new()
+        public UpdateModel.Player GetClientModel() => new()
         {
             Id = Id,
             X = X,
             Y = Y,
-            Direction = Direction,
+            Dir = Direction,
             Hp = HP
         };
     }

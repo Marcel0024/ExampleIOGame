@@ -1,6 +1,4 @@
-﻿using IOGameServer.Hubs.ClientModels;
-
-namespace IOGameServer.Application.Models
+﻿namespace IOGameServer.Application.Models
 {
     public abstract class GameObject
     {
@@ -9,7 +7,6 @@ namespace IOGameServer.Application.Models
         public required int Y { get; set; }
         public required double Direction { get; set; }
         public int Speed { get; set; }
-
 
         public virtual void Update(double distance)
         {
@@ -36,16 +33,6 @@ namespace IOGameServer.Application.Models
         public void SetDirection(double direction)
         {
             Direction = direction;
-        }
-
-        public virtual UpdateModel.GameObject ToJson()
-        {
-            return new()
-            {
-                Id = Id,
-                X = X,
-                Y = Y
-            };
         }
     }
 }

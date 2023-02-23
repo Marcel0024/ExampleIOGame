@@ -8,25 +8,25 @@ namespace IOGameServer.Application.Services
 {
     public sealed class GameService
     {
-        private readonly GameSettings GameSettings;
+        private readonly GameSettings _gameSettings;
 
-        public ConcurrentDictionary<string, Game> Games { get; init; } = new ConcurrentDictionary<string, Game>(3, 10);
+        public ConcurrentDictionary<string, Game> Games { get; init; } = new (3, 10);
 
         public GameService(IOptions<GameSettings> gameSettings)
         {
-            GameSettings = gameSettings.Value;
+            _gameSettings = gameSettings.Value;
         }
 
-        public (Game, Player) AddPlayer(string username, string userIdentifier)
+        public (Game, Player) AddPlayer(string username, string connectionId)
         {
             var game = Games
-                .Where(g => g.Value.PlayersDictionary.Count < GameSettings.TotalPlayersPerGame)
+                .Where(g => g.Value.PlayersDictionary.Count < _gameSettings.TotalPlayersPerGame)
                 .OrderByDescending(g => g.Value.PlayersDictionary.Count)
                 .FirstOrDefault().Value;
 
             game ??= CreateGame();
 
-            var player = game.AddPlayer(username, userIdentifier);
+            var player = game.AddPlayer(username, connectionId);
 
             return (game, player);
         }
@@ -50,7 +50,7 @@ namespace IOGameServer.Application.Services
 
         private Game CreateGame()
         {
-            Game game = new(GameSettings)
+            var game = new Game(_gameSettings)
             {
                 Id = IdFactory.GenerateUniqueId()
             };
@@ -67,7 +67,7 @@ namespace IOGameServer.Application.Services
                 return null;
             }
 
-            Games.TryGetValue(groupId, out Game game);
+            Games.TryGetValue(groupId, out var game);
 
             return game;
         }

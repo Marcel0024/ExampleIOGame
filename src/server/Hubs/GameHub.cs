@@ -6,30 +6,30 @@ namespace IOGameServer.Hubs
 {
     public sealed class GameHub : Hub<IGameHub>
     {
-        private const string _gameIdKey = "groupId";
-        private const string _playerIdKey = "playerId";
-        private const string _usernameKey = "username";
+        private const string GameIdKey = "groupId";
+        private const string PlayerIdKey = "playerId";
 
-        private readonly GameService GameService;
+        private readonly GameService _gameService;
 
         public GameHub(GameService gameService)
         {
-            GameService = gameService;
+            _gameService = gameService;
         }
 
         public async Task JoinGame(string username)
         {
             username = await UsernameValidator.Validate(username);
 
-            var (game, player) = GameService
+            var (game, player) = _gameService
                 .AddPlayer(username, Context.ConnectionId);
 
-            await SetContextItems(username, game.Id, player.Id);
+            Context.Items[GameIdKey] = game.Id;
+            Context.Items[PlayerIdKey] = player.Id;
         }
 
         public void ChangeDirection(double direction)
         {
-            GameService
+            _gameService
                 .GetGame(GetGameId())?
                 .GetPlayer(GetPlayerId())?
                 .SetDirection(direction);
@@ -37,29 +37,20 @@ namespace IOGameServer.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            GameService
+            _gameService
                 .RemovePlayer(GetGameId(), GetPlayerId());
 
             await base.OnDisconnectedAsync(exception);
         }
-
-        private async Task SetContextItems(string username, string gameId, string playerId)
-        {
-            Context.Items[_usernameKey] = username;
-            Context.Items[_gameIdKey] = gameId;
-            Context.Items[_playerIdKey] = playerId;
-
-            await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
-        }
-
+        
         private string GetPlayerId()
         {
-            return (string)Context.Items[_playerIdKey];
+            return (string)Context.Items[PlayerIdKey];
         }
 
         private string GetGameId()
         {
-            return (string)Context.Items[_gameIdKey];
+            return (string)Context.Items[GameIdKey];
 
         }
     }

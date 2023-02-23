@@ -8,17 +8,16 @@ namespace IOGameServer.Application
 {
     public sealed class Game
     {
+        private readonly GameSettings _gameSettings;
         private double _timeDifference;
         private DateTime _lastDateTimeUpdated = DateTime.UtcNow;
-        private readonly GameSettings GameSettings;
-
-        public ConcurrentDictionary<string, Player> PlayersDictionary { get; init; } = new ConcurrentDictionary<string, Player>(3, 10);
-        public ConcurrentDictionary<string, Bullet> BulletsDictionary { get; init; } = new ConcurrentDictionary<string, Bullet>(3, 10);
         public required string Id { get; init; }
+        public ConcurrentDictionary<string, Player> PlayersDictionary { get; init; } = new(3, 10);
+        public ConcurrentDictionary<string, Bullet> BulletsDictionary { get; init; } = new(3, 200);
 
         public Game(GameSettings gameSettings)
         {
-            GameSettings = gameSettings;
+            _gameSettings = gameSettings;
         }
 
         public void Update()
@@ -44,7 +43,7 @@ namespace IOGameServer.Application
             {
                 bullet.Update(_timeDifference);
 
-                if (bullet.ReachedBorder(GameSettings.MapSize))
+                if (bullet.ReachedBorder(_gameSettings.MapSize))
                 {
                     BulletsDictionary.TryRemove(bullet.Id, out _);
                 }
@@ -66,7 +65,7 @@ namespace IOGameServer.Application
                         Id = id,
                         PlayerId = player.Id,
                         Direction = player.Direction,
-                        Speed = GameSettings.BulletSpeed,
+                        Speed = _gameSettings.BulletSpeed,
                         X = player.X,
                         Y = player.Y,
                     });
@@ -85,7 +84,7 @@ namespace IOGameServer.Application
                         continue;
                     }
 
-                    if (player.DistanceTo(bullet) <= GameSettings.PlayerRadius + GameSettings.BulletRadius)
+                    if (player.DistanceTo(bullet) <= _gameSettings.PlayerRadius + _gameSettings.BulletRadius)
                     {
                         player.TakeBulletDamage();
 
@@ -106,7 +105,7 @@ namespace IOGameServer.Application
                 return null;
             }
 
-            PlayersDictionary.TryGetValue(id, out Player player);
+            PlayersDictionary.TryGetValue(id, out var player);
 
             return player;
         }
@@ -114,10 +113,10 @@ namespace IOGameServer.Application
         public Player AddPlayer(string username, string connectionId)
         {
             // Generate a position to start this player at.
-            var x = GameSettings.MapSize * (double)(0.25 + Random.Shared.NextDouble() * 0.5);
-            var y = GameSettings.MapSize * (double)(0.25 + Random.Shared.NextDouble() * 0.5);
+            var x = _gameSettings.MapSize * (0.25 + Random.Shared.NextDouble() * 0.5);
+            var y = _gameSettings.MapSize * (0.25 + Random.Shared.NextDouble() * 0.5);
 
-            var newPlayer = new Player(GameSettings)
+            var newPlayer = new Player(_gameSettings)
             {
                 Direction = 0,
                 Id = IdFactory.GenerateUniqueId(),
@@ -134,28 +133,34 @@ namespace IOGameServer.Application
 
         public UpdateModel CreateUpdateJson(Player player)
         {
+            var halfAMapSize = _gameSettings.MapSize / 2;
+            var players = PlayersDictionary.Values.ToArray();
+
+            var nearbyPlayers = players
+                .Where(p => p.Id != player.Id && p.DistanceTo(player) <= halfAMapSize)
+                .Select(p => p.GetClientModel());
+
+            var nearbyBullets = BulletsDictionary.Values
+                .Where(b => b.DistanceTo(player) <= halfAMapSize);
+
             return new UpdateModel
             {
                 T = _timeDifference,
-                Me = player.ToJson(),
-                P = PlayersDictionary.Values
-                    .Where(p => p.Id != player.Id && p.DistanceTo(player) <= GameSettings.MapSize / 2)
-                    .Select(p => p.ToJson()),
-                B = BulletsDictionary.Values
-                    .Where(b => b.DistanceTo(player) <= GameSettings.MapSize / 2)
-                    .Select(b => b.ToJson()),
-                L = GetLeaderBoard()
+                Me = player.GetClientModel(),
+                P = nearbyPlayers,
+                B = nearbyBullets.Select(b => b.GetClientModel()),
+                L = GetLeaderBoard(players)
             };
         }
 
-        public IEnumerable<UpdateModel.LeaderBoard> GetLeaderBoard()
+        private static IEnumerable<UpdateModel.LeaderBoard> GetLeaderBoard(IEnumerable<Player> players)
         {
-            return PlayersDictionary.Values
+            return players
                 .OrderByDescending(p => p.Score)
                 .Take(5)
                 .Select(p => new UpdateModel.LeaderBoard
                 {
-                    Username = p.Username,
+                    Name = p.Username,
                     Score = (int)p.Score,
                 });
         }
@@ -168,11 +173,11 @@ namespace IOGameServer.Application
         public void ChangePlayerDirection(string id, int direction)
         {
 
-            PlayersDictionary.TryGetValue(id, out Player player);
+            PlayersDictionary.TryGetValue(id, out var player);
             player?.SetDirection(direction);
         }
 
-        public Player[] HandleDeadPlayers()
+        public IEnumerable<Player> HandleDeadPlayers()
         {
             var deadPlayers = PlayersDictionary.Values
                 .Where(p => p.HP <= 0)

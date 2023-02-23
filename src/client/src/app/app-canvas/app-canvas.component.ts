@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { filter, map, merge, throttleTime } from 'rxjs';
+import { filter, map, merge, throttleTime, interval } from 'rxjs';
 import { fromEvent } from 'rxjs/internal/observable/fromEvent';
 import { GameScreenStatus } from 'src/app/enums/GameScreenStatus';
 import { AssetsService } from 'src/app/services/AssetsService';
@@ -16,11 +16,15 @@ export class CanvasComponent implements AfterViewInit {
   @ViewChild('gameCanvas', { static: false }) canvas!: ElementRef<HTMLCanvasElement>;
   canvasService: CanvasRendererService | null = null;
 
-  renderScreen$ = this.gameHubService.gameStatus$.subscribe((status) => {
+  screenToRenderCallback: Function = this.renderMainMenuBackground;
+
+  renderScreen$ = interval(1000 / 30).subscribe(() => this.screenToRenderCallback());
+
+  decideScreenToRender$ = this.gameHubService.gameStatus$.subscribe((status) => {
     if (status === GameScreenStatus.Playing) {
-      requestAnimationFrame(() => this.renderGame());
+      this.screenToRenderCallback = this.renderGame;
     } else {
-      requestAnimationFrame(() => this.renderMainMenuBackground());
+      this.screenToRenderCallback = this.renderMainMenuBackground;
     }
   });
 
@@ -43,28 +47,30 @@ export class CanvasComponent implements AfterViewInit {
       filter(() => this.gameHubService.gameStatus$.value === GameScreenStatus.Playing),
       throttleTime(50),
       map((event) => {
-        if (window.TouchEvent && event instanceof TouchEvent) {
-          const touchEvent = event as TouchEvent;
-
-          return {
-            x: touchEvent.touches[0].clientX,
-            y: touchEvent.touches[0].clientY,
-          };
-        } else if (event instanceof MouseEvent) {
+        if (event instanceof MouseEvent) {
           const mouseEvent = event as MouseEvent;
 
           return {
             x: mouseEvent.clientX,
             y: mouseEvent.clientY,
           };
+        } else if (window.TouchEvent && event instanceof TouchEvent) {
+          const touchEvent = event as TouchEvent;
+
+          return {
+            x: touchEvent.touches[0].clientX,
+            y: touchEvent.touches[0].clientY,
+          };
         }
 
-        return { x: 0, y: 0 };
+        return null;
       })
     )
     .subscribe((coordinates) => {
-      const direction = Math.atan2(coordinates.x - window.innerWidth / 2, window.innerHeight / 2 - coordinates.y);
-      this.gameHubService.changeDirection(direction);
+      if (coordinates) {
+        const direction = Math.atan2(coordinates.x - window.innerWidth / 2, window.innerHeight / 2 - coordinates.y);
+        this.gameHubService.changeDirection(direction);
+      }
     });
 
   constructor(
@@ -78,21 +84,13 @@ export class CanvasComponent implements AfterViewInit {
     this.canvasService = new CanvasRendererService(this.assetsService, canvasContext!, this.canvas.nativeElement);
 
     this.canvasService.setCanvasDimensions();
-
-    requestAnimationFrame(() => this.renderMainMenuBackground());
   }
 
   private renderGame(): void {
     this.canvasService?.renderGame(this.stateService.getCurrentState());
-
-    // Rerun this render function on the next frame
-    requestAnimationFrame(() => this.renderGame());
   }
 
   private renderMainMenuBackground(): void {
     this.canvasService?.renderMainMenuBackground();
-
-    // Rerun this render function on the next frame
-    requestAnimationFrame(() => this.renderMainMenuBackground());
   }
 }

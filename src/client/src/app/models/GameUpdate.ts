@@ -6,21 +6,20 @@ export interface GameUpdate {
   l: Leaderboard[];
 }
 
-export interface Player {
-  direction: number;
+export interface Player extends GameObject {
+  dir: number;
   hp: number;
-  id: string;
-  x: number;
-  y: number;
 }
 
-export interface Bullet {
-  id: string;
-  x: number;
-  y: number;
-}
+export interface Bullet extends GameObject {}
 
 export interface Leaderboard {
-  username: string;
+  name: string;
   score: number;
+}
+
+export interface GameObject {
+  id: string;
+  x: number;
+  y: number;
 }
