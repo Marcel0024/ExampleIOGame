@@ -52,7 +52,7 @@ export class GameHubService {
 
   private registerServerCalls(): void {
     this.hubConnection.on(ClientCalls.GameUpdate, (data) => {
-      const processedData = this.convertKeysToCamelCase(JSON.parse(data));
+      const processedData = this.convertKeysToCamelCase(data);
       this.gameUpdate$.next(processedData as GameUpdate);
     });
 

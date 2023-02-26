@@ -1,8 +1,10 @@
-﻿namespace IOGameServer.Hubs
+﻿using IOGameServer.Hubs.ClientModels;
+
+namespace IOGameServer.Hubs
 {
     public interface IGameHub
     {
         Task GameOver();
-        Task GameUpdate(string json);
+        Task GameUpdate(UpdateModel update);
     }
 }

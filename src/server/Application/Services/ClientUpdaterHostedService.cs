@@ -72,7 +72,7 @@ namespace IOGameServer.Application.Services
 
                 await _hubContext.Clients
                     .Client(player.ConnectionId)
-                    .GameUpdate(JsonSerializer.Serialize(playerUpdate));
+                    .GameUpdate(playerUpdate);
             }
         }
 
