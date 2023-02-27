@@ -26,9 +26,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: test
-        run: echo "$GITHUB_CONTEXT"
-
       - name: Repo Checkout
         uses: actions/checkout@v3
 
