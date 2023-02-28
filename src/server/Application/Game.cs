@@ -58,17 +58,17 @@ namespace IOGameServer.Application
 
                 if (player.CanFireBullet())
                 {
-                    var id = IdFactory.GenerateUniqueId();
-
-                    BulletsDictionary.TryAdd(id, new Bullet
+                    var bullet = new Bullet
                     {
-                        Id = id,
+                        Id = IdFactory.GenerateUniqueId(),
                         PlayerId = player.Id,
                         Direction = player.Direction,
                         Speed = _gameSettings.BulletSpeed,
                         X = player.X,
                         Y = player.Y,
-                    });
+                    };
+
+                    BulletsDictionary.TryAdd(bullet.Id, bullet);
                 }
             }
         }
@@ -112,18 +112,14 @@ namespace IOGameServer.Application
 
         public Player AddPlayer(string username, string connectionId)
         {
-            // Generate a position to start this player at.
-            var x = _gameSettings.MapSize * (0.25 + Random.Shared.NextDouble() * 0.5);
-            var y = _gameSettings.MapSize * (0.25 + Random.Shared.NextDouble() * 0.5);
-
             var newPlayer = new Player(_gameSettings)
             {
-                Direction = 0,
                 Id = IdFactory.GenerateUniqueId(),
+                Direction = Random.Shared.NextDouble() * 2,
                 ConnectionId = connectionId,
                 Username = username,
-                X = (int)x,
-                Y = (int)y,
+                X = Random.Shared.Next(0, _gameSettings.MapSize),
+                Y = Random.Shared.Next(0, _gameSettings.MapSize),
             };
 
             PlayersDictionary[newPlayer.Id] = newPlayer;
@@ -133,15 +129,14 @@ namespace IOGameServer.Application
 
         public UpdateModel CreateUpdateJson(Player player)
         {
-            var halfAMapSize = _gameSettings.MapSize / 2;
             var players = PlayersDictionary.Values.ToArray();
 
             var nearbyPlayers = players
-                .Where(p => p.Id != player.Id && p.DistanceTo(player) <= halfAMapSize)
+                .Where(p => p.Id != player.Id && p.DistanceTo(player) <= _gameSettings.MapSize / 2)
                 .Select(p => p.GetClientModel());
 
             var nearbyBullets = BulletsDictionary.Values
-                .Where(b => b.DistanceTo(player) <= halfAMapSize);
+                .Where(b => b.DistanceTo(player) <= _gameSettings.MapSize / 2);
 
             return new UpdateModel
             {
