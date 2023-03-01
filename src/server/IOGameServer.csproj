@@ -6,6 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<WarningsAsErrors>IDE0005</WarningsAsErrors>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<UserSecretsId>example-io-game</UserSecretsId>
 	</PropertyGroup>
 	
 	<ItemGroup>
