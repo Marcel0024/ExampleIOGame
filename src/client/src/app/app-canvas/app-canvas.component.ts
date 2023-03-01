@@ -16,17 +16,17 @@ export class CanvasComponent implements AfterViewInit {
   @ViewChild('gameCanvas', { static: false }) canvas!: ElementRef<HTMLCanvasElement>;
   canvasService: CanvasRendererService | null = null;
 
-  screenToRenderCallback: Function = this.renderMainMenuBackground;
-
-  renderScreen$ = interval(1000 / 30).subscribe(() => this.screenToRenderCallback());
-
-  decideScreenToRender$ = this.gameHubService.gameStatus$.subscribe((status) => {
+  decideWhichScreenToRender$ = this.gameHubService.gameStatus$.subscribe((status) => {
     if (status === GameScreenStatus.Playing) {
       this.screenToRenderCallback = this.renderGame;
     } else {
       this.screenToRenderCallback = this.renderMainMenuBackground;
     }
   });
+
+  screenToRenderCallback: Function = this.renderMainMenuBackground;
+
+  renderTheScreen$ = interval(1000 / 30).subscribe(() => this.screenToRenderCallback());
 
   updadteCanvasDimensionOnResize$ = fromEvent(window, 'resize')
     .pipe(throttleTime(50))

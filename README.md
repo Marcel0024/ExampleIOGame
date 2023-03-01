@@ -17,6 +17,10 @@ An example multiplayer (.io) web game created in .NET 7 and Angular 15.
 
 The original was created by [Victor Zhou](https://github.com/vzhou842/example-.io-game) in Javascript and Node.js.
 
+###
+
+For a more realistic scenario with a more complex design pattern checkout the [Composite Design Pattern](https://github.com/Marcel0024/ExampleIOGame/tree/composite-design-pattern) branch. The GameObjects are kept in a single list and are build with components, making it easier to add more objects!
+
 ## Running it locally
 
 To get started with the client, make sure you have Node and NPM & Angular installed. Then,
