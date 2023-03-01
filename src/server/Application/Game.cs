@@ -16,10 +16,12 @@ namespace IOGameServer.Application
         public required string Id { get; init; }
         public required GameSettings Settings { get; init; }
         public int TotalPlayers { get; private set; } = 0;
+
         public ConcurrentDictionary<string, IGameObject> GameObjects { private get; init; } = new(3, 2000);
-        public ConcurrentBag<IGameObject> MarkToRemoveGameObjects { get; init; } = new();
-        public ConcurrentBag<IGameObject> MarkToAddGameObjects { get; init; } = new();
-        public ConcurrentQueue<Player> DeadPlayersToNotify { get; init; } = new();
+
+        public ConcurrentQueue<IGameObject> QueueToRemoveGameObjects { get; init; } = new();
+        public ConcurrentQueue<IGameObject> QueueToAddGameObjects { get; init; } = new();
+        public ConcurrentQueue<Player> QueueToNotifyDeadPlayers { get; init; } = new();
 
         public void Update()
         {
@@ -52,10 +54,10 @@ namespace IOGameServer.Application
                 {
                     var gameObject2 = gameObjects[j];
 
-                    if (gameObject1.Collided(gameObject2))
+                    if (gameObject1.HasCollidedWith(gameObject2))
                     {
-                        gameObject1.HandleCollision(gameObject2);
-                        gameObject2.HandleCollision(gameObject1);
+                        gameObject1.HandleCollisionImpact(gameObject2);
+                        gameObject2.HandleCollisionImpact(gameObject1);
                     }
                 }
             }
@@ -63,27 +65,27 @@ namespace IOGameServer.Application
 
         private void HandleRemovedObjects()
         {
-            foreach (var objectToRemove in MarkToRemoveGameObjects)
+            while (QueueToRemoveGameObjects.TryDequeue(out var gameObjectToRemove))
             {
-                if (objectToRemove is Player player)
+                if (gameObjectToRemove is Player player)
                 {
-                    DeadPlayersToNotify.Enqueue(player);
+                    QueueToNotifyDeadPlayers.Enqueue(player);
                 }
 
-                GameObjects.TryRemove(objectToRemove.Id, out _);
+                GameObjects.TryRemove(gameObjectToRemove.Id, out _);
             }
 
-            MarkToRemoveGameObjects.Clear();
+            QueueToRemoveGameObjects.Clear();
         }
 
         private void HandleAddedObjects()
         {
-            foreach (var objectToAdd in MarkToAddGameObjects)
+            while (QueueToAddGameObjects.TryDequeue(out var gameObjectToAdd))
             {
-                GameObjects.TryAdd(objectToAdd.Id, objectToAdd);
+                GameObjects.TryAdd(gameObjectToAdd.Id, gameObjectToAdd);
             }
 
-            MarkToAddGameObjects.Clear();
+            QueueToAddGameObjects.Clear();
         }
 
         public Player GetPlayer(string id)

@@ -15,8 +15,8 @@ namespace IOGameServer.Application.Models
         void Start();
         void Update(double distance);
         double DistanceTo(IGameObject @object);
-        bool Collided(IGameObject @object);
-        void HandleCollision(IGameObject @object);
+        bool HasCollidedWith(IGameObject @object);
+        void HandleCollisionImpact(IGameObject @object);
         void HandleInput(IInput input);
         void RemoveMe();
         void AddItemToGame(IGameObject @object);

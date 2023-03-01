@@ -77,7 +77,7 @@ namespace IOGameServer.Application.Services
 
         private async Task HandleDeadPlayers(Game game)
         {
-            while (game.DeadPlayersToNotify.TryDequeue(out Player player))
+            while (game.QueueToNotifyDeadPlayers.TryDequeue(out Player player))
             {
                 await _hubContext.Clients
                     .Client(player.ConnectionId)

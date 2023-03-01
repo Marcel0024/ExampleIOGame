@@ -19,7 +19,7 @@ namespace IOGameServer.Application.Models
             Game = game;
         }
 
-        public virtual void Start()
+        public void Start()
         {
             foreach (var component in Components.Values)
             {
@@ -27,7 +27,7 @@ namespace IOGameServer.Application.Models
             }
         }
 
-        public virtual void Update(double distance)
+        public void Update(double distance)
         {
             foreach (var component in Components.Values)
             {
@@ -43,22 +43,22 @@ namespace IOGameServer.Application.Models
             return Math.Sqrt(dx * dx + dy * dy);
         }
 
-        public bool Collided(IGameObject gameObject)
+        public bool HasCollidedWith(IGameObject gameObject)
         {
             return GetComponent<CollisionObject>().Collided(gameObject);
         }
 
-        public void RemoveMe()
+        public virtual void RemoveMe()
         {
-            Game.MarkToRemoveGameObjects.Add(this);
+            Game.QueueToRemoveGameObjects.Enqueue(this);
         }
 
         public void AddItemToGame(IGameObject gameObject)
         {
-            Game.MarkToAddGameObjects.Add(gameObject);
+            Game.QueueToAddGameObjects.Enqueue(gameObject);
         }
 
-        public void HandleCollision(IGameObject gameObject)
+        public void HandleCollisionImpact(IGameObject gameObject)
         {
             GetComponent<CollisionObject>()?
                 .HandleCollision(gameObject);
