@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, toArray, mergeMap, tap, merge, map, retry } from 'rxjs';
+import { Observable, toArray, mergeMap, tap, merge, map, retry, take } from 'rxjs';
 import { Assets } from 'src/app/constants/Assets';
 
 @Injectable({
@@ -7,6 +7,10 @@ import { Assets } from 'src/app/constants/Assets';
 })
 export class AssetsService {
   private loadedAssets = new Map<string, HTMLImageElement>([]);
+
+  constructor() {
+    this.downloadAllAssets().pipe(take(1)).subscribe();
+  }
 
   downloadAllAssets(): Observable<HTMLImageElement[]> {
     return merge(Assets.map(this.downloadAsset)).pipe(
