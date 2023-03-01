@@ -1,8 +1,8 @@
 ﻿using IOGameServer.Application.Helpers;
-using IOGameServer.Application.Models;
 using IOGameServer.Application.Settings;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using IOGameServer.Application.Models.GameObjects;
 
 namespace IOGameServer.Application.Services
 {
@@ -19,10 +19,9 @@ namespace IOGameServer.Application.Services
 
         public (Game, Player) AddPlayer(string username, string connectionId)
         {
-            var game = Games
-                .Where(g => g.Value.PlayersDictionary.Count < _gameSettings.TotalPlayersPerGame)
-                .OrderByDescending(g => g.Value.PlayersDictionary.Count)
-                .FirstOrDefault().Value;
+            var game = Games.Values
+                .Where(game => game.TotalPlayers < _gameSettings.TotalPlayersPerGame)
+                .FirstOrDefault();
 
             game ??= CreateGame();
 
@@ -42,7 +41,7 @@ namespace IOGameServer.Application.Services
 
             game.RemovePlayer(playerId);
 
-            if (game.PlayersDictionary.IsEmpty)
+            if (game.TotalPlayers <= 0)
             {
                 Games.TryRemove(game.Id, out _);
             }
@@ -50,9 +49,10 @@ namespace IOGameServer.Application.Services
 
         private Game CreateGame()
         {
-            var game = new Game(_gameSettings)
+            var game = new Game()
             {
-                Id = IdFactory.GenerateUniqueId()
+                Id = IdFactory.GenerateUniqueId(),
+                Settings = _gameSettings
             };
 
             Games.TryAdd(game.Id, game);

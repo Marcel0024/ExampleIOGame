@@ -1,6 +1,6 @@
 ﻿using IOGameServer.Hubs;
 using Microsoft.AspNetCore.SignalR;
-using System.Text.Json;
+using IOGameServer.Application.Models.GameObjects;
 
 namespace IOGameServer.Application.Services
 {
@@ -12,7 +12,6 @@ namespace IOGameServer.Application.Services
 
         private PeriodicTimer Timer { get; init; }
         private Task ExecutingTask { get; set; }
-
 
         public ClientUpdaterHostedService(IHubContext<GameHub, IGameHub> hubContext, GameService gameService)
         {
@@ -59,14 +58,14 @@ namespace IOGameServer.Application.Services
             {
                 game.Update();
 
-                await HandleDeadPlayers(game);
                 await UpdateAllPlayersOfGame(game);
+                await HandleDeadPlayers(game);
             }
         }
 
         private async Task UpdateAllPlayersOfGame(Game game)
         {
-            foreach (var player in game.PlayersDictionary.Values)
+            foreach (var player in game.GetPlayers())
             {
                 var playerUpdate = game.CreateUpdateJson(player);
 
@@ -78,12 +77,10 @@ namespace IOGameServer.Application.Services
 
         private async Task HandleDeadPlayers(Game game)
         {
-            var deadPlayers = game.HandleDeadPlayers();
-
-            foreach (var deadPlayer in deadPlayers)
+            while (game.DeadPlayersToNotify.TryDequeue(out Player player))
             {
                 await _hubContext.Clients
-                    .Client(deadPlayer.ConnectionId)
+                    .Client(player.ConnectionId)
                     .GameOver();
             }
         }

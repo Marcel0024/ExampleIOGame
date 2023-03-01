@@ -1,6 +1,7 @@
 ﻿using IOGameServer.Application.Services;
 using IOGameServer.Helpers;
 using Microsoft.AspNetCore.SignalR;
+using IOGameServer.Application.Models.Inputs.Player;
 
 namespace IOGameServer.Hubs
 {
@@ -32,7 +33,10 @@ namespace IOGameServer.Hubs
             _gameService
                 .GetGame(GetGameId())?
                 .GetPlayer(GetPlayerId())?
-                .SetDirection(direction);
+                .HandleInput(new DirectionInput
+                {
+                    Direction = direction
+                });
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
