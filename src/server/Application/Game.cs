@@ -12,13 +12,14 @@ namespace IOGameServer.Application
     {
         private double _timeDifference;
         private DateTime _lastDateTimeUpdated = DateTime.UtcNow;
+        private readonly List<string> _keys = new(2000);
 
         public required string Id { get; init; }
         public required GameSettings Settings { get; init; }
         public int TotalPlayers { get; private set; } = 0;
 
         public ConcurrentDictionary<string, IGameObject> GameObjects { private get; init; } = new(3, 2000);
-        List<string> Keys = new List<string>(2000);
+
 
         public ConcurrentQueue<IGameObject> QueueToRemoveGameObjects { get; init; } = new();
         public ConcurrentQueue<IGameObject> QueueToAddGameObjects { get; init; } = new();
@@ -43,17 +44,17 @@ namespace IOGameServer.Application
 
         private void UpdateObjects()
         {
-            Keys.AddRange(GameObjects.Keys.ToArray());
+            _keys.AddRange(GameObjects.Keys.ToArray());
 
-            for (int i = 0; i < Keys.Count; i++)
+            for (int i = 0; i < _keys.Count; i++)
             {
-                var gameObject1 = GameObjects[Keys[i]];
+                var gameObject1 = GameObjects[_keys[i]];
 
                 gameObject1.Update(_timeDifference);
 
-                for (int j = i + 1; j < Keys.Count; j++)
+                for (int j = i + 1; j < _keys.Count; j++)
                 {
-                    var gameObject2 = GameObjects[Keys[j]];
+                    var gameObject2 = GameObjects[_keys[j]];
 
                     if (gameObject1.HasCollidedWith(gameObject2))
                     {
@@ -63,7 +64,7 @@ namespace IOGameServer.Application
                 }
             }
 
-            Keys.Clear();
+            _keys.Clear();
         }
 
         private void HandleRemovedObjects()
