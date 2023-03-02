@@ -1,8 +1,6 @@
-﻿using IOGameServer.Application.Models;
-
-namespace IOGameServer.Application.Models.Components.Spawn
+﻿namespace IOGameServer.Application.Models.Components.Spawn
 {
-    public abstract class SpawnComponent : Component<IGameObject>
+    public abstract class SpawnComponent : Component
     {
         protected SpawnComponent(IGameObject gameObject) : base(gameObject) { }
 

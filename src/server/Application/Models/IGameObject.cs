@@ -10,7 +10,7 @@ namespace IOGameServer.Application.Models
         int X { get; set; }
         int Y { get; set; }
 
-        IDictionary<Type, IComponent<IGameObject>> Components { get; }
+        IDictionary<Type, IComponent> Components { get; }
 
         void Start();
         void Update(double distance);
@@ -21,7 +21,7 @@ namespace IOGameServer.Application.Models
         void RemoveMe();
         void AddItemToGame(IGameObject @object);
 
-        T GetComponent<T>() where T : IComponent<IGameObject>;
-        void AddComponent(IComponent<IGameObject> component);
+        T GetComponent<T>() where T : IComponent;
+        void AddComponent(IComponent component);
     }
 }

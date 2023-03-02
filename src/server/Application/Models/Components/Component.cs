@@ -1,10 +1,10 @@
 ﻿namespace IOGameServer.Application.Models.Components
 {
-    public abstract class Component<T> : IComponent<T> where T : IGameObject
+    public abstract class Component : IComponent
     {
-        public T GameObject { get; protected set; }
+        public IGameObject GameObject { get; protected set; }
 
-        public Component(T gameObject)
+        public Component(IGameObject gameObject)
         {
             GameObject = gameObject;
         }

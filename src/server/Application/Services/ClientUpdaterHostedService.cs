@@ -58,12 +58,12 @@ namespace IOGameServer.Application.Services
             {
                 game.Update();
 
-                await UpdateAllPlayersOfGame(game);
+                await SendToAllPlayersOfGame(game);
                 await HandleDeadPlayers(game);
             }
         }
 
-        private async Task UpdateAllPlayersOfGame(Game game)
+        private async Task SendToAllPlayersOfGame(Game game)
         {
             foreach (var player in game.GetPlayers())
             {

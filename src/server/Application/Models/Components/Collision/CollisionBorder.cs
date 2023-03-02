@@ -1,6 +1,6 @@
 ﻿namespace IOGameServer.Application.Models.Components.Collision
 {
-    public abstract class CollisionBorder : Component<IGameObject>
+    public abstract class CollisionBorder : Component
     {
         protected CollisionBorder(IGameObject gameObject) : base(gameObject) { }
 

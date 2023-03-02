@@ -17,6 +17,7 @@ namespace IOGameServer.Application.Models.GameObjects
 
         public Player(Game game) : base(game)
         {
+            AddComponent(new SpawnRandom(this));
             AddComponent(new MovementNormal(this)
             {
                 Speed = Game.Settings.PlayerSpeed,
@@ -26,7 +27,6 @@ namespace IOGameServer.Application.Models.GameObjects
             AddComponent(new CollisionBorderStayInside(this));
             AddComponent(new CollisionObject(this) { Radius = Game.Settings.PlayerRadius });
             AddComponent(new ShootPerSecond(this) { FireCoolDown = Game.Settings.PlayerFireCooldown });
-            AddComponent(new SpawnRandom(this));
             AddComponent(new Health(this) { HP = Game.Settings.PlayerMaxHP });
         }
 

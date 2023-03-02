@@ -1,6 +1,6 @@
 ﻿namespace IOGameServer.Application.Models.Components.Collision
 {
-    public sealed class CollisionObject : Component<IGameObject>
+    public sealed class CollisionObject : Component
     {
         public required int Radius { get; set; }
         Damageable.Damageable Damageable { get; set; }

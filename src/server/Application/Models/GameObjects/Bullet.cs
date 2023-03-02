@@ -9,11 +9,11 @@ namespace IOGameServer.Application.Models.GameObjects
 {
     public sealed class Bullet : GameObject
     {
-        public Bullet(Game game, Player shotByPlayer, int x, int y, double direction) : base(game)
+        public Bullet(Game game, IGameObject shotByPlayer, int x, int y, double direction) : base(game)
         {
+            AddComponent(new SpawnFixed(this, x, y));
             AddComponent(new CollisionBorderRemoveOnTouch(this));
             AddComponent(new CollisionObject(this) { Radius = Game.Settings.BulletRadius });
-            AddComponent(new SpawnFixed(this, x, y));
             AddComponent(new Damageable(this) { ShotByPlayer = shotByPlayer, });
             AddComponent(new MovementNormal(this)
             {

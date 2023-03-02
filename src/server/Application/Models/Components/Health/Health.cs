@@ -2,7 +2,7 @@
 
 namespace IOGameServer.Application.Models.Components.Health
 {
-    public sealed class Health : Component<Player>
+    public sealed class Health : Component
     {
         public required int HP { get; set; }
 

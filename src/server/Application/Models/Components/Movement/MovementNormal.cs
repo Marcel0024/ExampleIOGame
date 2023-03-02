@@ -1,6 +1,6 @@
 ﻿namespace IOGameServer.Application.Models.Components.Movement
 {
-    public sealed class MovementNormal : Component<IGameObject>
+    public sealed class MovementNormal : Component
     {
         public required int Speed { get; init; }
         public required double Direction { get; set; }

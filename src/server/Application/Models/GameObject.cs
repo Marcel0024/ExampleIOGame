@@ -11,8 +11,7 @@ namespace IOGameServer.Application.Models
         public int X { get; set; }
         public int Y { get; set; }
 
-        public IDictionary<Type, IComponent<IGameObject>> Components { get; set; }
-            = new Dictionary<Type, IComponent<IGameObject>>(15);
+        public IDictionary<Type, IComponent> Components { get; set; } = new Dictionary<Type, IComponent>(15);
 
         public GameObject(Game game)
         {
@@ -21,17 +20,17 @@ namespace IOGameServer.Application.Models
 
         public void Start()
         {
-            foreach (var component in Components.Values)
+            foreach (var component in Components)
             {
-                component.Start();
+                component.Value.Start();
             }
         }
 
         public void Update(double distance)
         {
-            foreach (var component in Components.Values)
+            foreach (var component in Components)
             {
-                component.Update(distance);
+                component.Value.Update(distance);
             }
         }
 
@@ -66,9 +65,9 @@ namespace IOGameServer.Application.Models
 
         public abstract void HandleInput(IInput input);
 
-        public T GetComponent<T>() where T : IComponent<IGameObject>
+        public T GetComponent<T>() where T : IComponent
         {
-            if (Components.TryGetValue(typeof(T), out IComponent<IGameObject> component))
+            if (Components.TryGetValue(typeof(T), out IComponent component))
             {
                 return (T)component;
             }
@@ -78,7 +77,7 @@ namespace IOGameServer.Application.Models
             }
         }
 
-        public void AddComponent(IComponent<IGameObject> component)
+        public void AddComponent(IComponent component)
         {
             Components.Add(component.GetType(), component);
         }

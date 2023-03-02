@@ -2,11 +2,11 @@
 
 namespace IOGameServer.Application.Models.Components.Damageable
 {
-    public sealed class Damageable : Component<Bullet>
+    public sealed class Damageable : Component
     {
         public Damageable(Bullet gameObject) : base(gameObject) { }
 
-        public required Player ShotByPlayer { get; set; }
+        public required IGameObject ShotByPlayer { get; set; }
 
         public override void Start() { }
 

@@ -1,8 +1,8 @@
 ﻿namespace IOGameServer.Application.Models.Components
 {
-    public interface IComponent<out T> where T : IGameObject
+    public interface IComponent
     {
-        T GameObject { get; }
+        IGameObject GameObject { get; }
 
         void Start();
         void Update(double distance);

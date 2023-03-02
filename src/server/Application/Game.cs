@@ -18,6 +18,7 @@ namespace IOGameServer.Application
         public int TotalPlayers { get; private set; } = 0;
 
         public ConcurrentDictionary<string, IGameObject> GameObjects { private get; init; } = new(3, 2000);
+        List<string> Keys = new List<string>(2000);
 
         public ConcurrentQueue<IGameObject> QueueToRemoveGameObjects { get; init; } = new();
         public ConcurrentQueue<IGameObject> QueueToAddGameObjects { get; init; } = new();
@@ -42,17 +43,17 @@ namespace IOGameServer.Application
 
         private void UpdateObjects()
         {
-            var gameObjects = GameObjects.Values.ToArray();
+            Keys.AddRange(GameObjects.Keys.ToArray());
 
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Keys.Count; i++)
             {
-                var gameObject1 = gameObjects[i];
+                var gameObject1 = GameObjects[Keys[i]];
 
                 gameObject1.Update(_timeDifference);
 
-                for (int j = i + 1; j < gameObjects.Length; j++)
+                for (int j = i + 1; j < Keys.Count; j++)
                 {
-                    var gameObject2 = gameObjects[j];
+                    var gameObject2 = GameObjects[Keys[j]];
 
                     if (gameObject1.HasCollidedWith(gameObject2))
                     {
@@ -61,6 +62,8 @@ namespace IOGameServer.Application
                     }
                 }
             }
+
+            Keys.Clear();
         }
 
         private void HandleRemovedObjects()

@@ -1,13 +1,11 @@
-﻿using IOGameServer.Application.Models.GameObjects;
-
-namespace IOGameServer.Application.Models.Components.Score
+﻿namespace IOGameServer.Application.Models.Components.Score
 {
-    public sealed class ScoreIncrementPerSecond : Component<Player>
+    public sealed class ScoreIncrementPerSecond : Component
     {
         public required int ScorePerSecond { get; init; }
         public double Score { get; set; } = 0;
 
-        public ScoreIncrementPerSecond(Player gameObject) : base(gameObject) { }
+        public ScoreIncrementPerSecond(IGameObject gameObject) : base(gameObject) { }
 
         public override void Start() { }
 

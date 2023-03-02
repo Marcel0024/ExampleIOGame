@@ -4,12 +4,12 @@ using IOGameServer.Application.Models.GameObjects;
 
 namespace IOGameServer.Application.Models.Components.Shoot
 {
-    public sealed class ShootPerSecond : Component<Player>
+    public sealed class ShootPerSecond : Component
     {
         double CurrentFireCoolDown { get; set; }
         public required double FireCoolDown { get; set; }
 
-        public ShootPerSecond(Player gameObject) : base(gameObject) { }
+        public ShootPerSecond(IGameObject gameObject) : base(gameObject) { }
 
         public override void Start() { }
 
