@@ -20,7 +20,6 @@ namespace IOGameServer.Application
 
         public ConcurrentDictionary<string, IGameObject> GameObjects { private get; init; } = new(3, 2000);
 
-
         public ConcurrentQueue<IGameObject> QueueToRemoveGameObjects { get; init; } = new();
         public ConcurrentQueue<IGameObject> QueueToAddGameObjects { get; init; } = new();
         public ConcurrentQueue<Player> QueueToNotifyDeadPlayers { get; init; } = new();
