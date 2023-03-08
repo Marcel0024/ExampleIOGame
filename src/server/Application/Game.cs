@@ -12,8 +12,6 @@ namespace IOGameServer.Application
     {
         private double _timeDifference;
         private DateTime _lastDateTimeUpdated = DateTime.UtcNow;
-        private readonly List<string> _keys = new(2000);
-
         public required string Id { get; init; }
         public required GameSettings Settings { get; init; }
         public int TotalPlayers { get; private set; } = 0;
@@ -41,29 +39,27 @@ namespace IOGameServer.Application
             _lastDateTimeUpdated = now;
         }
 
+        // O(n^2) 
+        // You probably woudn't want to do it like this in a real game.
         private void UpdateObjects()
         {
-            _keys.AddRange(GameObjects.Keys.ToArray());
-
-            for (int i = 0; i < _keys.Count; i++)
+            foreach (var gameObject1 in GameObjects.Values)
             {
-                var gameObject1 = GameObjects[_keys[i]];
-
                 gameObject1.Update(_timeDifference);
 
-                for (int j = i + 1; j < _keys.Count; j++)
+                foreach (var gameObject2 in GameObjects.Values)
                 {
-                    var gameObject2 = GameObjects[_keys[j]];
+                    if (gameObject1.Id == gameObject2.Id)
+                    {
+                        continue;
+                    }
 
                     if (gameObject1.HasCollidedWith(gameObject2))
                     {
                         gameObject1.HandleCollisionImpact(gameObject2);
-                        gameObject2.HandleCollisionImpact(gameObject1);
                     }
                 }
             }
-
-            _keys.Clear();
         }
 
         private void HandleRemovedObjects()
@@ -77,8 +73,6 @@ namespace IOGameServer.Application
 
                 GameObjects.TryRemove(gameObjectToRemove.Id, out _);
             }
-
-            QueueToRemoveGameObjects.Clear();
         }
 
         private void HandleAddedObjects()
@@ -87,8 +81,6 @@ namespace IOGameServer.Application
             {
                 GameObjects.TryAdd(gameObjectToAdd.Id, gameObjectToAdd);
             }
-
-            QueueToAddGameObjects.Clear();
         }
 
         public Player GetPlayer(string id)

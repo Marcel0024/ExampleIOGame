@@ -19,8 +19,6 @@ namespace IOGameServer.Application.Models.Components.Damageable
                 return;
             }
 
-            GameObject.RemoveMe();
-
             gameObject
                 .GetComponent<Health.Health>()?
                 .TakeDamage(GameObject.Game.Settings.BulletDamage);
@@ -30,6 +28,8 @@ namespace IOGameServer.Application.Models.Components.Damageable
                 .ShotByPlayer?
                 .GetComponent<Score.ScoreIncrementPerSecond>()?
                 .IncreaseScore(GameObject.Game.Settings.ScoreBulletHit);
+
+            GameObject.RemoveMe();
         }
     }
 }
