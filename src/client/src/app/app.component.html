@@ -1,39 +1,47 @@
 <app-canvas class="game-canvas"></app-canvas>
-<div [ngSwitch]="gameScreen$ | async">
-    <div id="play-menu" *ngSwitchCase="gameScreenEnum.WelcomeScreen">
+<div>
+  @switch (gameScreen$ | async) {
+    @case (gameScreenEnum.WelcomeScreen) {
+      <div id="play-menu">
         <h1>An example .io game</h1>
         <p>
-            Stay alive and shoot other players.
-            <br />
-            Use your mouse to move.
+          Stay alive and shoot other players.
+          <br />
+          Use your mouse to move.
         </p>
         <hr />
         <p>
-            See the source code on
-            <a href="https://github.com/marcel0024/ExampleIOGame" target="_blank">Github</a>.
+          See the source code on
+          <a href="https://github.com/marcel0024/ExampleIOGame" target="_blank">Github</a>.
         </p>
         <hr />
         <input
-            type="text"
-            id="username-input"
-            placeholder="Username"
-            [maxLength]="16"
-            [(ngModel)]="username"
-        />
-        <button id="play-button" (click)="startGame()">PLAY</button>
-    </div>
-    <div class="modal" *ngSwitchCase="gameScreenEnum.Disconnected">
-        <div>
+          type="text"
+          id="username-input"
+          placeholder="Username"
+          [maxLength]="16"
+          [(ngModel)]="username"
+          />
+          <button id="play-button" (click)="startGame()">PLAY</button>
+        </div>
+      }
+      @case (gameScreenEnum.Disconnected) {
+        <div class="modal">
+          <div>
             <h2>Disconnected from Server</h2>
             <hr />
             <button (click)="connect()">RECONNECT</button>
+          </div>
         </div>
-    </div>
-    <div class="modal" *ngSwitchCase="gameScreenEnum.Dead">
-        <div>
+      }
+      @case (gameScreenEnum.Dead) {
+        <div class="modal">
+          <div>
             <h2>You are dead</h2>
             <hr />
             <button (click)="startGame()">PLAY AGAIN</button>
+          </div>
         </div>
-    </div>
+      }
+    }
 </div>

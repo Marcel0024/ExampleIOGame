@@ -6,11 +6,14 @@ import { AssetsService } from 'src/app/services/AssetsService';
 import { CanvasRendererService } from 'src/app/services/CanvasRendererService';
 import { GameHubService } from 'src/app/services/GameHubService';
 import { StateService } from 'src/app/services/StateService';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
-  selector: 'app-canvas',
-  templateUrl: './app-canvas.component.html',
-  styleUrls: ['./app-canvas.component.scss'],
+    selector: 'app-canvas',
+    templateUrl: './app-canvas.component.html',
+    styleUrls: ['./app-canvas.component.scss'],
+    standalone: true,
+    imports: [AsyncPipe],
 })
 export class CanvasComponent implements AfterViewInit {
   @ViewChild('gameCanvas', { static: false }) canvas!: ElementRef<HTMLCanvasElement>;

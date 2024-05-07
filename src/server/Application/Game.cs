@@ -3,187 +3,154 @@ using IOGameServer.Application.Settings;
 using IOGameServer.Application.Models;
 using IOGameServer.Hubs.ClientModels;
 using System.Collections.Concurrent;
+using IOGameServer.Application.Models.Components.Score;
+using IOGameServer.Application.Models.GameObjects;
 
-namespace IOGameServer.Application
+namespace IOGameServer.Application;
+
+public sealed class Game
 {
-    public sealed class Game
+    private double _timeDifference;
+    private DateTime _lastDateTimeUpdated = DateTime.UtcNow;
+    public required string Id { get; init; }
+    public required GameSettings Settings { get; init; }
+    public int TotalPlayers { get; private set; } = 0;
+
+    public ConcurrentDictionary<string, IGameObject> GameObjects { private get; init; } = new(3, 2000);
+
+    public ConcurrentQueue<IGameObject> QueueToRemoveGameObjects { get; init; } = new();
+    public ConcurrentQueue<IGameObject> QueueToAddGameObjects { get; init; } = new();
+    public ConcurrentQueue<Player> QueueToNotifyDeadPlayers { get; init; } = new();
+
+    public void Update()
     {
-        private readonly GameSettings _gameSettings;
-        private double _timeDifference;
-        private DateTime _lastDateTimeUpdated = DateTime.UtcNow;
-        public required string Id { get; init; }
-        public ConcurrentDictionary<string, Player> PlayersDictionary { get; init; } = new(3, 10);
-        public ConcurrentDictionary<string, Bullet> BulletsDictionary { get; init; } = new(3, 200);
+        CalculateTimeSinceLastUpdate();
 
-        public Game(GameSettings gameSettings)
+        UpdateObjects();
+
+        HandleRemovedObjects();
+        HandleAddedObjects();
+    }
+
+    private void CalculateTimeSinceLastUpdate()
+    {
+        var now = DateTime.UtcNow;
+        _timeDifference = now.Subtract(_lastDateTimeUpdated).TotalSeconds;
+        _lastDateTimeUpdated = now;
+    }
+
+    // O(n^2) 
+    // You probably woudn't want to do it like this in a real game.
+    private void UpdateObjects()
+    {
+        foreach (var gameObject1 in GameObjects.Values)
         {
-            _gameSettings = gameSettings;
-        }
+            gameObject1.Update(_timeDifference);
 
-        public void Update()
-        {
-            CalculateTimeSinceLastUpdate();
-
-            UpdateBullets();
-            UpdatePlayers();
-
-            HandleCollisions();
-        }
-
-        private void CalculateTimeSinceLastUpdate()
-        {
-            var now = DateTime.UtcNow;
-            _timeDifference = now.Subtract(_lastDateTimeUpdated).TotalSeconds;
-            _lastDateTimeUpdated = now;
-        }
-
-        private void UpdateBullets()
-        {
-            foreach (var bullet in BulletsDictionary.Values)
+            foreach (var gameObject2 in GameObjects.Values)
             {
-                bullet.Update(_timeDifference);
-
-                if (bullet.ReachedBorder(_gameSettings.MapSize))
+                if (gameObject1.Id == gameObject2.Id)
                 {
-                    BulletsDictionary.TryRemove(bullet.Id, out _);
+                    continue;
+                }
+
+                if (gameObject1.HasCollidedWith(gameObject2))
+                {
+                    gameObject1.HandleCollisionImpact(gameObject2);
                 }
             }
         }
+    }
 
-        private void UpdatePlayers()
+    private void HandleRemovedObjects()
+    {
+        while (QueueToRemoveGameObjects.TryDequeue(out var gameObjectToRemove))
         {
-            foreach (var player in PlayersDictionary.Values)
+            if (gameObjectToRemove is Player player)
             {
-                player.Update(_timeDifference);
-
-                if (player.CanFireBullet())
-                {
-                    var bullet = new Bullet
-                    {
-                        Id = IdFactory.GenerateUniqueId(),
-                        PlayerId = player.Id,
-                        Direction = player.Direction,
-                        Speed = _gameSettings.BulletSpeed,
-                        X = player.X,
-                        Y = player.Y,
-                    };
-
-                    BulletsDictionary.TryAdd(bullet.Id, bullet);
-                }
-            }
-        }
-
-        private void HandleCollisions()
-        {
-            foreach (var bullet in BulletsDictionary.Values)
-            {
-                foreach (var player in PlayersDictionary.Values)
-                {
-                    if (player.Id == bullet.PlayerId)
-                    {
-                        continue;
-                    }
-
-                    if (player.DistanceTo(bullet) <= _gameSettings.PlayerRadius + _gameSettings.BulletRadius)
-                    {
-                        player.TakeBulletDamage();
-
-                        PlayersDictionary.TryGetValue(bullet.PlayerId, out var shooter);
-                        shooter?.ScoreBulletHit();
-
-                        BulletsDictionary.TryRemove(bullet.Id, out _);
-                        break;
-                    }
-                }
-            }
-        }
-
-        public Player GetPlayer(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                return null;
+                QueueToNotifyDeadPlayers.Enqueue(player);
             }
 
-            PlayersDictionary.TryGetValue(id, out var player);
+            GameObjects.TryRemove(gameObjectToRemove.Id, out _);
+        }
+    }
 
-            return player;
+    private void HandleAddedObjects()
+    {
+        while (QueueToAddGameObjects.TryDequeue(out var gameObjectToAdd))
+        {
+            GameObjects.TryAdd(gameObjectToAdd.Id, gameObjectToAdd);
+        }
+    }
+
+    public Player GetPlayer(string id)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            return default;
         }
 
-        public Player AddPlayer(string username, string connectionId)
+        GameObjects.TryGetValue(id, out var player);
+
+        return (Player)player;
+    }
+
+    public Player AddPlayer(string username, string connectionId)
+    {
+        var newPlayer = new Player(this)
         {
-            var newPlayer = new Player(_gameSettings)
+            Id = IdFactory.GenerateUniqueId(),
+            ConnectionId = connectionId,
+            Username = username,
+        };
+
+        newPlayer.Start();
+
+        GameObjects[newPlayer.Id] = newPlayer;
+
+        TotalPlayers++;
+
+        return newPlayer;
+    }
+
+    public IEnumerable<Player> GetPlayers()
+    {
+        return GameObjects.Values.Where(go => go is Player).Cast<Player>();
+    }
+
+    public UpdateModel CreateUpdateJson(Player player)
+    {
+        var halfAMapSize = Settings.MapSize / 2;
+        var allVisibleObjects = GameObjects.Values.Where(p => p.DistanceTo(player) <= halfAMapSize).ToArray();
+
+        var nearbyPlayers = allVisibleObjects.Where(x => x is Player).Select(x => ((Player)x));
+        var nearbyBullets = allVisibleObjects.Where(x => x is Bullet).Select(x => ((Bullet)x).GetClientModel());
+
+        return new UpdateModel
+        {
+            T = _timeDifference,
+            Me = player.GetClientModel(),
+            P = nearbyPlayers.Where(p => p.Id != player.Id).Select(x => x.GetClientModel()),
+            B = nearbyBullets,
+            L = GetLeaderBoard(nearbyPlayers)
+        };
+    }
+
+    private static IEnumerable<UpdateModel.LeaderBoard> GetLeaderBoard(IEnumerable<Player> players)
+    {
+        return players
+            .OrderByDescending(p => p.GetComponent<ScoreIncrementPerSecond>().Score)
+            .Take(5)
+            .Select(p => new UpdateModel.LeaderBoard
             {
-                Id = IdFactory.GenerateUniqueId(),
-                Direction = Random.Shared.NextDouble() * 2,
-                ConnectionId = connectionId,
-                Username = username,
-                X = Random.Shared.Next(0, _gameSettings.MapSize),
-                Y = Random.Shared.Next(0, _gameSettings.MapSize),
-            };
+                Name = p.Username,
+                Score = (int)p.GetComponent<ScoreIncrementPerSecond>().Score,
+            });
+    }
 
-            PlayersDictionary[newPlayer.Id] = newPlayer;
-
-            return newPlayer;
-        }
-
-        public UpdateModel CreateUpdateJson(Player player)
-        {
-            var players = PlayersDictionary.Values.ToArray();
-
-            var nearbyPlayers = players
-                .Where(p => p.Id != player.Id && p.DistanceTo(player) <= _gameSettings.MapSize / 2)
-                .Select(p => p.GetClientModel());
-
-            var nearbyBullets = BulletsDictionary.Values
-                .Where(b => b.DistanceTo(player) <= _gameSettings.MapSize / 2);
-
-            return new UpdateModel
-            {
-                T = _timeDifference,
-                Me = player.GetClientModel(),
-                P = nearbyPlayers,
-                B = nearbyBullets.Select(b => b.GetClientModel()),
-                L = GetLeaderBoard(players)
-            };
-        }
-
-        private static IEnumerable<UpdateModel.LeaderBoard> GetLeaderBoard(IEnumerable<Player> players)
-        {
-            return players
-                .OrderByDescending(p => p.Score)
-                .Take(5)
-                .Select(p => new UpdateModel.LeaderBoard
-                {
-                    Name = p.Username,
-                    Score = (int)p.Score,
-                });
-        }
-
-        public void RemovePlayer(string id)
-        {
-            PlayersDictionary.TryRemove(id, out _);
-        }
-
-        public void ChangePlayerDirection(string id, int direction)
-        {
-
-            PlayersDictionary.TryGetValue(id, out var player);
-            player?.SetDirection(direction);
-        }
-
-        public IEnumerable<Player> HandleDeadPlayers()
-        {
-            var deadPlayers = PlayersDictionary.Values
-                .Where(p => p.HP <= 0)
-                .ToArray();
-
-            foreach (var player in deadPlayers)
-            {
-                PlayersDictionary.TryRemove(player.Id, out _);
-            }
-
-            return deadPlayers;
-        }
+    public void RemovePlayer(string id)
+    {
+        GameObjects.TryRemove(id, out _);
+        TotalPlayers--;
     }
 }

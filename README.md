@@ -9,17 +9,15 @@
 </h4>
 
 <p align="center">
-  <a href="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml"><img src="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml/badge.svg" alt="Build Status"></img></a>
+  <a href="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml">
+  <img src="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml/badge.svg" alt="Build Status"></img></a>
 </p>
 
+This repository contains a multiplayer (.io) web game, developed using .NET 8 and Angular 17.
 
-An example multiplayer (.io) web game created in .NET 7 and Angular 15.
+The original game was developed by [Victor Zhou](https://github.com/vzhou842/example-.io-game), using Javascript and Node.js. In this version, we've transitioned to C# for server-side logic and Typescript for the client side.
 
-The original was created by [Victor Zhou](https://github.com/vzhou842/example-.io-game) in Javascript and Node.js.
-
-###
-
-For a more realistic scenario with a more complex design pattern checkout the [Composite Design Pattern](https://github.com/Marcel0024/ExampleIOGame/tree/composite-design-pattern) branch. The GameObjects are kept in a single list and are build with components, making it easier to add more objects!
+One of the significant changes in this version is the implementation of the Composite Design Pattern. Instead of using separate arrays for each game object type, we've simplified the structure to use a single, unified array.
 
 ## Running it locally
 

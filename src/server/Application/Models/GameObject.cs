@@ -1,38 +1,79 @@
-﻿namespace IOGameServer.Application.Models
+﻿using IOGameServer.Application.Models.Components;
+using IOGameServer.Application.Models.Components.Collision;
+using IOGameServer.Application.Models.Inputs;
+
+namespace IOGameServer.Application.Models;
+
+public abstract class GameObject(Game game) : IGameObject
 {
-    public abstract class GameObject
+    public Game Game { get; init; } = game;
+    public required string Id { get; init; }
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public IDictionary<Type, IComponent> Components { get; set; } = new Dictionary<Type, IComponent>(15);
+
+    public void Start()
     {
-        public required string Id { get; init; }
-        public required int X { get; set; }
-        public required int Y { get; set; }
-        public required double Direction { get; set; }
-        public int Speed { get; set; }
-
-        public virtual void Update(double distance)
+        foreach (var component in Components)
         {
-            X = (int)(X + Speed * distance * Math.Sin(Direction));
-            Y = (int)(Y - Speed * distance * Math.Cos(Direction));
+            component.Value.Start();
         }
+    }
 
-        public double DistanceTo(GameObject @object)
+    public void Update(double distance)
+    {
+        foreach (var component in Components)
         {
-            var dx = X - @object.X;
-            var dy = Y - @object.Y;
-
-            return Math.Sqrt(dx * dx + dy * dy);
+            component.Value.Update(distance);
         }
+    }
 
-        public bool ReachedBorder(int mapSize)
+    public double DistanceTo(IGameObject gameObject)
+    {
+        var dx = X - gameObject.X;
+        var dy = Y - gameObject.Y;
+
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    public bool HasCollidedWith(IGameObject gameObject)
+    {
+        return GetComponent<CollisionObject>().Collided(gameObject);
+    }
+
+    public virtual void RemoveMe()
+    {
+        Game.QueueToRemoveGameObjects.Enqueue(this);
+    }
+
+    public void AddItemToGame(IGameObject gameObject)
+    {
+        Game.QueueToAddGameObjects.Enqueue(gameObject);
+    }
+
+    public void HandleCollisionImpact(IGameObject gameObject)
+    {
+        GetComponent<CollisionObject>()?
+            .HandleCollision(gameObject);
+    }
+
+    public abstract void HandleInput(IInput input);
+
+    public T GetComponent<T>() where T : IComponent
+    {
+        if (Components.TryGetValue(typeof(T), out IComponent component))
         {
-            return X <= 0 
-                || Y <= 0
-                || X >= mapSize 
-                || Y >= mapSize;
+            return (T)component;
         }
-
-        public void SetDirection(double direction)
+        else
         {
-            Direction = direction;
+            return default;
         }
+    }
+
+    public void AddComponent(IComponent component)
+    {
+        Components.Add(component.GetType(), component);
     }
 }

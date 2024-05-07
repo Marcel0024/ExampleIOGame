@@ -68,10 +68,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "IOGameClient:build:production"
+              "buildTarget": "IOGameClient:build:production"
             },
             "development": {
-              "browserTarget": "IOGameClient:build:development"
+              "buildTarget": "IOGameClient:build:development"
             }
           },
           "defaultConfiguration": "development"

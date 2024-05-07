@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace IOGameServer.Pages
+namespace IOGameServer.Pages;
+
+public sealed class IndexModel : PageModel
 {
-    public sealed class IndexModel : PageModel
-    {
-        public void OnGet()
-        { }
-    }
+    public void OnGet()
+    { }
 }
