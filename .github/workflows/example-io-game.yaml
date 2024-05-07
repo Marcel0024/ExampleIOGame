@@ -20,6 +20,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy_platform_resources:
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -30,10 +34,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Azure Login
-        uses: Azure/login@v1
+        uses: Azure/login@v2
         with:
-          # for future me: az ad sp create-for-rbac --name "{namehere}" --role Contributor --scopes /subscriptions/{subscriptionId} --sdk-auth
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }} 
+          enable-AzPSSession: true
+
       - name: Checkout files
         uses: actions/checkout@master
 
