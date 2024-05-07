@@ -1,16 +1,13 @@
-﻿namespace IOGameServer.Application.Models.Components.Spawn
+﻿namespace IOGameServer.Application.Models.Components.Spawn;
+
+public abstract class SpawnComponent(IGameObject gameObject) : Component(gameObject)
 {
-    public abstract class SpawnComponent : Component
+    public override void Start()
     {
-        protected SpawnComponent(IGameObject gameObject) : base(gameObject) { }
-
-        public override void Start()
-        {
-            Spawn();
-        }
-
-        public override void Update(double _) { }
-
-        public abstract void Spawn();
+        Spawn();
     }
+
+    public override void Update(double _) { }
+
+    public abstract void Spawn();
 }

@@ -1,16 +1,10 @@
-﻿namespace IOGameServer.Application.Models.Components
+﻿namespace IOGameServer.Application.Models.Components;
+
+public abstract class Component(IGameObject gameObject) : IComponent
 {
-    public abstract class Component : IComponent
-    {
-        public IGameObject GameObject { get; protected set; }
+    public IGameObject GameObject { get; protected set; } = gameObject;
 
-        public Component(IGameObject gameObject)
-        {
-            GameObject = gameObject;
-        }
+    public abstract void Start();
 
-        public abstract void Start();
-
-        public abstract void Update(double distance);
-    }
+    public abstract void Update(double distance);
 }

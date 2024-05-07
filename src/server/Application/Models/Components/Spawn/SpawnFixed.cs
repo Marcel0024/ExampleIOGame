@@ -1,20 +1,13 @@
-﻿namespace IOGameServer.Application.Models.Components.Spawn
+﻿namespace IOGameServer.Application.Models.Components.Spawn;
+
+public sealed class SpawnFixed(IGameObject gameObject, int x, int y) : SpawnComponent(gameObject)
 {
-    public sealed class SpawnFixed : SpawnComponent
+    public int XSpawn { get; set; } = x;
+    public int YSpawn { get; set; } = y;
+
+    public override void Spawn()
     {
-        public SpawnFixed(IGameObject gameObject, int x, int y) : base(gameObject)
-        {
-            XSpawn = x;
-            YSpawn = y;
-        }
-
-        public int XSpawn { get; set; }
-        public int YSpawn { get; set; }
-
-        public override void Spawn()
-        {
-            GameObject.X = XSpawn;
-            GameObject.Y = YSpawn;
-        }
+        GameObject.X = XSpawn;
+        GameObject.Y = YSpawn;
     }
 }

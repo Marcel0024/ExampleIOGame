@@ -9,17 +9,15 @@
 </h4>
 
 <p align="center">
-  <a href="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml"><img src="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml/badge.svg" alt="Build Status"></img></a>
+  <a href="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml">
+  <img src="https://github.com/Marcel0024/ExampleIOGame/actions/workflows/example-io-game.yaml/badge.svg" alt="Build Status"></img></a>
 </p>
 
 
-An example multiplayer (.io) web game created in .NET 7 and Angular 15.
+An example multiplayer (.io) web game created in .NET 8 and Angular 17.
 
-The original was created by [Victor Zhou](https://github.com/vzhou842/example-.io-game) in Javascript and Node.js.
-
-###
-
-For a more realistic scenario with a more complex design pattern checkout the [Composite Design Pattern](https://github.com/Marcel0024/ExampleIOGame/tree/composite-design-pattern) branch. The GameObjects are kept in a single list and are build with components, making it easier to add more objects!
+The original was created by [Victor Zhou](https://github.com/vzhou842/example-.io-game) in Javascript and Node.js. 
+It's been rewritten for .NET and Angular.
 
 ## Running it locally
 

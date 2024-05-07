@@ -1,25 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
-	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<WarningsAsErrors>IDE0005</WarningsAsErrors>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<UserSecretsId>example-io-game</UserSecretsId>
-	</PropertyGroup>
-	
-	<ItemGroup>
-		<Content Include="Resources\words.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="gamesettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="7.0.3" />
-	</ItemGroup>
-
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <WarningsAsErrors>IDE0005</WarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <UserSecretsId>example-io-game</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Resources\words.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="gamesettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.4" />
+  </ItemGroup>
 </Project>

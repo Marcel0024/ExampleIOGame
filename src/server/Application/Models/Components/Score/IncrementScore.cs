@@ -1,22 +1,19 @@
-﻿namespace IOGameServer.Application.Models.Components.Score
+﻿namespace IOGameServer.Application.Models.Components.Score;
+
+public sealed class ScoreIncrementPerSecond(IGameObject gameObject) : Component(gameObject)
 {
-    public sealed class ScoreIncrementPerSecond : Component
+    public required int ScorePerSecond { get; init; }
+    public double Score { get; set; } = 0;
+
+    public override void Start() { }
+
+    public override void Update(double distance)
     {
-        public required int ScorePerSecond { get; init; }
-        public double Score { get; set; } = 0;
+        IncreaseScore(distance * ScorePerSecond);
+    }
 
-        public ScoreIncrementPerSecond(IGameObject gameObject) : base(gameObject) { }
-
-        public override void Start() { }
-
-        public override void Update(double distance)
-        {
-            IncreaseScore(distance * ScorePerSecond);
-        }
-
-        public void IncreaseScore(double score)
-        {
-            Score += score;
-        }
+    public void IncreaseScore(double score)
+    {
+        Score += score;
     }
 }

@@ -2,84 +2,78 @@
 using IOGameServer.Application.Models.Components.Collision;
 using IOGameServer.Application.Models.Inputs;
 
-namespace IOGameServer.Application.Models
+namespace IOGameServer.Application.Models;
+
+public abstract class GameObject(Game game) : IGameObject
 {
-    public abstract class GameObject : IGameObject
+    public Game Game { get; init; } = game;
+    public required string Id { get; init; }
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public IDictionary<Type, IComponent> Components { get; set; } = new Dictionary<Type, IComponent>(15);
+
+    public void Start()
     {
-        public Game Game { get; init; }
-        public required string Id { get; init; }
-        public int X { get; set; }
-        public int Y { get; set; }
-
-        public IDictionary<Type, IComponent> Components { get; set; } = new Dictionary<Type, IComponent>(15);
-
-        public GameObject(Game game)
+        foreach (var component in Components)
         {
-            Game = game;
+            component.Value.Start();
         }
+    }
 
-        public void Start()
+    public void Update(double distance)
+    {
+        foreach (var component in Components)
         {
-            foreach (var component in Components)
-            {
-                component.Value.Start();
-            }
+            component.Value.Update(distance);
         }
+    }
 
-        public void Update(double distance)
+    public double DistanceTo(IGameObject gameObject)
+    {
+        var dx = X - gameObject.X;
+        var dy = Y - gameObject.Y;
+
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    public bool HasCollidedWith(IGameObject gameObject)
+    {
+        return GetComponent<CollisionObject>().Collided(gameObject);
+    }
+
+    public virtual void RemoveMe()
+    {
+        Game.QueueToRemoveGameObjects.Enqueue(this);
+    }
+
+    public void AddItemToGame(IGameObject gameObject)
+    {
+        Game.QueueToAddGameObjects.Enqueue(gameObject);
+    }
+
+    public void HandleCollisionImpact(IGameObject gameObject)
+    {
+        GetComponent<CollisionObject>()?
+            .HandleCollision(gameObject);
+    }
+
+    public abstract void HandleInput(IInput input);
+
+    public T GetComponent<T>() where T : IComponent
+    {
+        if (Components.TryGetValue(typeof(T), out IComponent component))
         {
-            foreach (var component in Components)
-            {
-                component.Value.Update(distance);
-            }
+            return (T)component;
         }
-
-        public double DistanceTo(IGameObject gameObject)
+        else
         {
-            var dx = X - gameObject.X;
-            var dy = Y - gameObject.Y;
-
-            return Math.Sqrt(dx * dx + dy * dy);
+            return default;
         }
+    }
 
-        public bool HasCollidedWith(IGameObject gameObject)
-        {
-            return GetComponent<CollisionObject>().Collided(gameObject);
-        }
-
-        public virtual void RemoveMe()
-        {
-            Game.QueueToRemoveGameObjects.Enqueue(this);
-        }
-
-        public void AddItemToGame(IGameObject gameObject)
-        {
-            Game.QueueToAddGameObjects.Enqueue(gameObject);
-        }
-
-        public void HandleCollisionImpact(IGameObject gameObject)
-        {
-            GetComponent<CollisionObject>()?
-                .HandleCollision(gameObject);
-        }
-
-        public abstract void HandleInput(IInput input);
-
-        public T GetComponent<T>() where T : IComponent
-        {
-            if (Components.TryGetValue(typeof(T), out IComponent component))
-            {
-                return (T)component;
-            }
-            else
-            {
-                return default;
-            }
-        }
-
-        public void AddComponent(IComponent component)
-        {
-            Components.Add(component.GetType(), component);
-        }
+    public void AddComponent(IComponent component)
+    {
+        Components.Add(component.GetType(), component);
     }
 }

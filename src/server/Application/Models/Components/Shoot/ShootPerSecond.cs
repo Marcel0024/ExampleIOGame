@@ -2,50 +2,47 @@
 using IOGameServer.Application.Models.Components.Movement;
 using IOGameServer.Application.Models.GameObjects;
 
-namespace IOGameServer.Application.Models.Components.Shoot
+namespace IOGameServer.Application.Models.Components.Shoot;
+
+public sealed class ShootPerSecond(IGameObject gameObject) : Component(gameObject)
 {
-    public sealed class ShootPerSecond : Component
+    double CurrentFireCoolDown { get; set; }
+    public required double FireCoolDown { get; set; }
+
+    public override void Start() { }
+
+    public override void Update(double distance)
     {
-        double CurrentFireCoolDown { get; set; }
-        public required double FireCoolDown { get; set; }
+        CoolDown(distance);
 
-        public ShootPerSecond(IGameObject gameObject) : base(gameObject) { }
-
-        public override void Start() { }
-
-        public override void Update(double distance)
+        if (CanFire())
         {
-            CoolDown(distance);
+            var direction = GameObject.GetComponent<MovementNormal>().Direction;
 
-            if (CanFire())
+            var newBullet = new Bullet(GameObject.Game, GameObject, GameObject.X, GameObject.Y, direction)
             {
-                var direction = GameObject.GetComponent<MovementNormal>().Direction;
+                Id = IdFactory.GenerateUniqueId(),
+            };
 
-                var newBullet = new Bullet(GameObject.Game, GameObject, GameObject.X, GameObject.Y, direction)
-                {
-                    Id = IdFactory.GenerateUniqueId(),
-                };
+            newBullet.Start();
 
-                newBullet.Start();
-
-                GameObject.AddItemToGame(newBullet);
-            }
+            GameObject.AddItemToGame(newBullet);
         }
+    }
 
-        private bool CanFire()
+    private bool CanFire()
+    {
+        if (CurrentFireCoolDown <= 0)
         {
-            if (CurrentFireCoolDown <= 0)
-            {
-                CurrentFireCoolDown = FireCoolDown;
-                return true;
-            }
-
-            return false;
+            CurrentFireCoolDown = FireCoolDown;
+            return true;
         }
 
-        private void CoolDown(double distance)
-        {
-            CurrentFireCoolDown -= distance;
-        }
+        return false;
+    }
+
+    private void CoolDown(double distance)
+    {
+        CurrentFireCoolDown -= distance;
     }
 }

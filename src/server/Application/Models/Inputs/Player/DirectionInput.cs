@@ -1,7 +1,6 @@
-﻿namespace IOGameServer.Application.Models.Inputs.Player
+﻿namespace IOGameServer.Application.Models.Inputs.Player;
+
+public class DirectionInput : IInput
 {
-    public class DirectionInput : IInput
-    {
-        public double Direction { get; init; }
-    }
+    public double Direction { get; init; }
 }

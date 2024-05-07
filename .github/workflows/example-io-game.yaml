@@ -8,8 +8,8 @@ env:
   AZURE_WEBAPP_NAME: example-io-game
   CLIENT_APP_LOCATION: src/client
   SERVER_APP_LOCATION: src/server/IOGameServer.csproj
-  NODE_VERSION: 18
-  DOTNET_VERSION: "7.x"
+  NODE_VERSION: 20
+  DOTNET_VERSION: "8.x"
   TEMP_FOLDER: "Release"
 
 on:

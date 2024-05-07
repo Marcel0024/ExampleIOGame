@@ -1,12 +1,9 @@
-﻿namespace IOGameServer.Application.Models.Components.Collision
-{
-    public sealed class CollisionBorderRemoveOnTouch : CollisionBorder
-    {
-        public CollisionBorderRemoveOnTouch(IGameObject gameObject) : base(gameObject) { }
+﻿namespace IOGameServer.Application.Models.Components.Collision;
 
-        protected override void HandleReachedBorder()
-        {
-            GameObject.RemoveMe();
-        }
+public sealed class CollisionBorderRemoveOnTouch(IGameObject gameObject) : CollisionBorder(gameObject)
+{
+    protected override void HandleReachedBorder()
+    {
+        GameObject.RemoveMe();
     }
 }

@@ -4,72 +4,66 @@ using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using IOGameServer.Application.Models.GameObjects;
 
-namespace IOGameServer.Application.Services
+namespace IOGameServer.Application.Services;
+
+public sealed class GameService(IOptions<GameSettings> gameSettings)
 {
-    public sealed class GameService
+    private readonly GameSettings _gameSettings = gameSettings.Value;
+
+    public ConcurrentDictionary<string, Game> Games { get; init; } = new (3, 10);
+
+    public (Game, Player) AddPlayer(string username, string connectionId)
     {
-        private readonly GameSettings _gameSettings;
+        var game = Games.Values
+            .Where(game => game.TotalPlayers < _gameSettings.TotalPlayersPerGame)
+            .FirstOrDefault();
 
-        public ConcurrentDictionary<string, Game> Games { get; init; } = new (3, 10);
+        game ??= CreateGame();
 
-        public GameService(IOptions<GameSettings> gameSettings)
+        var player = game.AddPlayer(username, connectionId);
+
+        return (game, player);
+    }
+
+    public void RemovePlayer(string gameId, string playerId)
+    {
+        var game = GetGame(gameId);
+
+        if (game == null)
         {
-            _gameSettings = gameSettings.Value;
+            return;
         }
 
-        public (Game, Player) AddPlayer(string username, string connectionId)
+        game.RemovePlayer(playerId);
+
+        if (game.TotalPlayers <= 0)
         {
-            var game = Games.Values
-                .Where(game => game.TotalPlayers < _gameSettings.TotalPlayersPerGame)
-                .FirstOrDefault();
+            Games.TryRemove(game.Id, out _);
+        }
+    }
 
-            game ??= CreateGame();
+    private Game CreateGame()
+    {
+        var game = new Game()
+        {
+            Id = IdFactory.GenerateUniqueId(),
+            Settings = _gameSettings
+        };
 
-            var player = game.AddPlayer(username, connectionId);
+        Games.TryAdd(game.Id, game);
 
-            return (game, player);
+        return game;
+    }
+
+    public Game GetGame(string groupId)
+    {
+        if (string.IsNullOrEmpty(groupId))
+        {
+            return null;
         }
 
-        public void RemovePlayer(string gameId, string playerId)
-        {
-            var game = GetGame(gameId);
+        Games.TryGetValue(groupId, out var game);
 
-            if (game == null)
-            {
-                return;
-            }
-
-            game.RemovePlayer(playerId);
-
-            if (game.TotalPlayers <= 0)
-            {
-                Games.TryRemove(game.Id, out _);
-            }
-        }
-
-        private Game CreateGame()
-        {
-            var game = new Game()
-            {
-                Id = IdFactory.GenerateUniqueId(),
-                Settings = _gameSettings
-            };
-
-            Games.TryAdd(game.Id, game);
-
-            return game;
-        }
-
-        public Game GetGame(string groupId)
-        {
-            if (string.IsNullOrEmpty(groupId))
-            {
-                return null;
-            }
-
-            Games.TryGetValue(groupId, out var game);
-
-            return game;
-        }
+        return game;
     }
 }
